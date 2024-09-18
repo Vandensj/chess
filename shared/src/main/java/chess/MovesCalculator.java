@@ -3,12 +3,29 @@ package chess;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public abstract class MovesCalculator {
+public class MovesCalculator {
 
     // Abstract method that must be implemented by specific piece calculators
-    public abstract Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition myPosition, ChessGame.TeamColor pieceColor);
+    public static Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition myPosition, ChessGame.TeamColor pieceColor) {
+        switch (board.getPiece(myPosition).getPieceType()) {
+            case KING:
+                return KingMovesCalculator.calculateMoves(board, myPosition, pieceColor);
+            case QUEEN:
+                return QueenMovesCalculator.calculateMoves(board, myPosition, pieceColor);
+            case BISHOP:
+                return BishopMovesCalculator.calculateMoves(board, myPosition, pieceColor);
+            case KNIGHT:
+                return KnightMovesCalculator.calculateMoves(board, myPosition, pieceColor);
+            case ROOK:
+                return RookMovesCalculator.calculateMoves(board, myPosition, pieceColor);
+            case PAWN:
+                return PawnMovesCalculator.calculateMoves(board, myPosition, pieceColor);
+            default:
+                throw new IllegalArgumentException("Unknown piece type: " + board.getPiece(myPosition).getPieceType());
+        }
+    }
 
-    protected Collection<ChessMove> calculateLinearMoves(Boolean iterative, ChessBoard board, ChessPosition startPosition, ChessGame.TeamColor pieceColor, int[][] directions) {
+    protected static Collection<ChessMove> calculateLinearMoves(Boolean iterative, ChessBoard board, ChessPosition startPosition, ChessGame.TeamColor pieceColor, int[][] directions) {
         Collection<ChessMove> validMoves = new ArrayList<>();
 
         for (int[] direction : directions) {

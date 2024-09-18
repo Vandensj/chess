@@ -4,8 +4,7 @@ import java.util.Collection;
 
 public class KnightMovesCalculator extends MovesCalculator {
 
-    @Override
-    public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition myPosition, ChessGame.TeamColor pieceColor) {
+    public static Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition myPosition, ChessGame.TeamColor pieceColor) {
         // Knight moves in an L shape
         int[][] knightDirections = {
                 {1, 2},

@@ -5,8 +5,7 @@ import java.util.Collection;
 
 public class PawnMovesCalculator extends MovesCalculator {
 
-    @Override
-    public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition myPosition, ChessGame.TeamColor pieceColor) {
+    public static Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition myPosition, ChessGame.TeamColor pieceColor) {
         Collection<ChessMove> validMoves = new ArrayList<>();
 
         // If piece is black we go down

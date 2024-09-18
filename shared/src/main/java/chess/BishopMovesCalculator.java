@@ -4,8 +4,7 @@ import java.util.Collection;
 
 public class BishopMovesCalculator extends MovesCalculator {
 
-    @Override
-    public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition myPosition, ChessGame.TeamColor pieceColor) {
+    public static Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition myPosition, ChessGame.TeamColor pieceColor) {
         // Bishop moves diagonally, so we pass the diagonal directions
         int[][] diagonalDirections = {
                 {1, 1},   // Down-right

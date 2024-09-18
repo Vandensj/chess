@@ -4,8 +4,7 @@ import java.util.Collection;
 
 public class RookMovesCalculator extends MovesCalculator {
 
-    @Override
-    public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition myPosition, ChessGame.TeamColor pieceColor) {
+    public static Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition myPosition, ChessGame.TeamColor pieceColor) {
         // Rook moves in straight lines, so we pass the horizontal and vertical directions
         int[][] straightDirections = {
                 {1, 0},   // Down

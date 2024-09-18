@@ -2,6 +2,7 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * Represents a single chess piece
@@ -13,12 +14,10 @@ public class ChessPiece {
 
     private final ChessGame.TeamColor pieceColor;
     private final PieceType type;
-    private final MovesCalculator movesCalculator;
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.pieceColor = pieceColor;
         this.type = type;
-        this.movesCalculator = createMovesCalculator();
     }
 
     /**
@@ -55,25 +54,19 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        return movesCalculator.calculateMoves(board, myPosition, pieceColor);
+        return MovesCalculator.calculateMoves(board, myPosition, pieceColor);
     }
 
-    private chess.MovesCalculator createMovesCalculator() {
-        switch (type) {
-            case KING:
-                return new KingMovesCalculator();
-            case QUEEN:
-                return new QueenMovesCalculator();
-            case BISHOP:
-                return new BishopMovesCalculator();
-            case KNIGHT:
-                return new KnightMovesCalculator();
-            case ROOK:
-                return new RookMovesCalculator();
-            case PAWN:
-                return new PawnMovesCalculator();
-            default:
-                throw new IllegalArgumentException("Unknown piece type: " + type);
-        }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessPiece that = (ChessPiece) o;
+        return pieceColor == that.pieceColor && type == that.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pieceColor, type);
     }
 }

@@ -4,8 +4,7 @@ import java.util.Collection;
 
 public class QueenMovesCalculator extends MovesCalculator {
 
-    @Override
-    public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition myPosition, ChessGame.TeamColor pieceColor) {
+    public static Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition myPosition, ChessGame.TeamColor pieceColor) {
         // Queen moves in all straight lines and diagonals
         int[][] allDirections = {
                 {1, 1}, {1, -1}, {-1, 1}, {-1, -1},  // Diagonal directions
