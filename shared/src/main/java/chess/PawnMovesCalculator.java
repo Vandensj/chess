@@ -41,7 +41,7 @@ public class PawnMovesCalculator extends MovesCalculator {
                     validMoves.add(new ChessMove(myPosition, downRight, null));
             }
             ChessPosition downLeft = new ChessPosition(myPosition.getRow()-1, myPosition.getColumn()-1);
-            if (!downRight.outsideBounds() && board.getPiece(downLeft) != null && board.getPiece(downLeft).getTeamColor() != pieceColor) {
+            if (!downLeft.outsideBounds() && board.getPiece(downLeft) != null && board.getPiece(downLeft).getTeamColor() != pieceColor) {
                 // Check if piece can be promoted
                 if (downLeft.getRow() == 1) {
                     validMoves.add(new ChessMove(myPosition, downLeft, ChessPiece.PieceType.BISHOP));
