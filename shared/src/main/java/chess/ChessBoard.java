@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 
+import static java.lang.Math.abs;
+
 /**
  * A chessboard that can hold and rearrange chess pieces.
  * <p>
@@ -12,6 +14,8 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessBoard {
+
+    private ChessPosition capturedPosition = null;
 
     ChessPiece[][] squares;
 
@@ -22,11 +26,32 @@ public class ChessBoard {
     public ChessPiece doMove(ChessMove move) {
         ChessPiece piece;
         ChessPiece capturedPiece = getPiece(move.getEndPosition());
+        capturedPosition = move.getEndPosition();
         if (move.getPromotionPiece() != null) {
             piece = new ChessPiece(this.getPiece(move.getStartPosition()).getTeamColor(), move.getPromotionPiece());
         } else {
             piece = this.getPiece(move.getStartPosition());
         }
+        // Check if en pessant or castling
+        switch (this.getPiece(move.getStartPosition()).getPieceType()) {
+            case PAWN:
+                if (abs(move.getStartPosition().getColumn() - move.getEndPosition().getColumn()) > 0 && this.getPiece(move.getEndPosition()) == null) {
+                    capturedPosition = new ChessPosition(move.getStartPosition().getRow(), move.getEndPosition().getColumn());
+                    capturedPiece = this.getPiece(capturedPosition);
+                    this.addPiece(capturedPosition, null);
+                }
+                break;
+            case KING:
+                if (abs(move.getStartPosition().getColumn() - move.getEndPosition().getColumn()) > 1) {
+                    if (this.getPiece(move.getStartPosition()).getTeamColor() == ChessGame.TeamColor.WHITE) {
+
+                    } else {
+
+                    }
+                }
+                break;
+        }
+
         this.addPiece(move.getEndPosition(), piece);
         this.addPiece(move.getStartPosition(), null);
         return capturedPiece;
@@ -35,7 +60,7 @@ public class ChessBoard {
     public void undoMove(ChessMove move, ChessPiece capturedPiece) {
         ChessPiece piece = this.getPiece(move.getEndPosition());
         this.addPiece(move.getStartPosition(), piece);
-        this.addPiece(move.getEndPosition(), capturedPiece);
+        this.addPiece(capturedPosition, capturedPiece);
     }
 
     public Collection<ChessPosition> getPieces(ChessGame.TeamColor teamColor) {
