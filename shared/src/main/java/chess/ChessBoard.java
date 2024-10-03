@@ -11,7 +11,7 @@ import java.util.Objects;
  */
 public class ChessBoard {
 
-    private ChessPiece[][] squares;
+    ChessPiece[][] squares;
 
     public ChessBoard() {
         squares = new ChessPiece[8][8];
@@ -79,47 +79,5 @@ public class ChessBoard {
     @Override
     public int hashCode() {
         return Arrays.deepHashCode(squares);
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 0; i < 8; i++) {
-            sb.append("|");
-            for (int j = 0; j < 8; j++) {
-                sb.append(pieceString(squares[i][j]));
-                sb.append("|");
-            }
-            sb.append("\n");
-        }
-        return sb.toString();
-    }
-
-    private String pieceString(ChessPiece piece) {
-        if (piece == null) {
-            return " ";
-        }
-        if (piece.getTeamColor() == ChessGame.TeamColor.BLACK) {
-            return switch (piece.getPieceType()) {
-                case ROOK -> "R";
-                case KNIGHT -> "N";
-                case BISHOP -> "B";
-                case QUEEN -> "Q";
-                case KING -> "K";
-                case PAWN -> "P";
-                default -> "";
-            };
-        } else {
-            return switch (piece.getPieceType()) {
-                case ROOK -> "r";
-                case KNIGHT -> "n";
-                case BISHOP -> "b";
-                case QUEEN -> "q";
-                case KING -> "k";
-                case PAWN -> "p";
-                default -> "";
-            };
-        }
     }
 }

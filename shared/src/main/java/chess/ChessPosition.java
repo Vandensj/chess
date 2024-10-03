@@ -34,16 +34,8 @@ public class ChessPosition {
         return col;
     }
 
-    public boolean outsideBounds() {
+    public Boolean outsideBounds() {
         return (row > 8 || row < 1 || col > 8 || col < 1);
-    }
-
-    @Override
-    public String toString() {
-        return "[" +
-                 row +
-                "," + col +
-                ']';
     }
 
     @Override
