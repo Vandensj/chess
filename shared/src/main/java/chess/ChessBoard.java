@@ -1,6 +1,8 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -15,6 +17,48 @@ public class ChessBoard {
 
     public ChessBoard() {
         squares = new ChessPiece[8][8];
+    }
+
+    public ChessPiece doMove(ChessMove move) {
+        ChessPiece piece;
+        ChessPiece capturedPiece = getPiece(move.getEndPosition());
+        if (move.getPromotionPiece() != null) {
+            piece = new ChessPiece(this.getPiece(move.getStartPosition()).getTeamColor(), move.getPromotionPiece());
+        } else {
+            piece = this.getPiece(move.getStartPosition());
+        }
+        this.addPiece(move.getEndPosition(), piece);
+        this.addPiece(move.getStartPosition(), null);
+        return capturedPiece;
+    }
+
+    public void undoMove(ChessMove move, ChessPiece capturedPiece) {
+        ChessPiece piece = this.getPiece(move.getEndPosition());
+        this.addPiece(move.getStartPosition(), piece);
+        this.addPiece(move.getEndPosition(), capturedPiece);
+    }
+
+    public Collection<ChessPosition> getPieces(ChessGame.TeamColor teamColor) {
+        Collection<ChessPosition> pieces = new ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (squares[i][j] != null && teamColor == squares[i][j].getTeamColor()) {
+                    pieces.add(new ChessPosition(i+1, j+1));
+                }
+            }
+        }
+        return pieces;
+    }
+
+    public ChessPosition getKing(ChessGame.TeamColor teamColor) {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (squares[i][j] != null && teamColor == squares[i][j].getTeamColor() && squares[i][j].getPieceType() == ChessPiece.PieceType.KING) {
+                    return new ChessPosition(i+1, j+1);
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -84,7 +128,7 @@ public class ChessBoard {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < 8; i++) {
+        for (int i = 7; i > -1; i--) {
             sb.append("|");
             for (int j = 0; j < 8; j++) {
                 sb.append(pieceString(squares[i][j]));
@@ -98,7 +142,7 @@ public class ChessBoard {
         if (piece == null) {
             return " ";
         }
-        if (piece.getTeamColor() == ChessGame.TeamColor.BLACK) {
+        if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
             return switch (piece.getPieceType()) {
                 case ROOK -> "R";
                 case KNIGHT -> "N";

@@ -56,6 +56,15 @@ public class ChessPiece {
         return MovesCalculator.calculateMoves(board, myPosition);
     }
 
+    public Boolean canKillKing(ChessBoard board, ChessPosition myPosition) {
+        Collection<ChessMove> moves = pieceMoves(board, myPosition);
+        for (ChessMove move : moves) {
+            if (board.getPiece(move.getEndPosition()) != null && board.getPiece(move.getEndPosition()).type == PieceType.KING)
+                return true;
+        }
+        return false;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

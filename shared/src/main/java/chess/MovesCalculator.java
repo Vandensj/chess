@@ -56,7 +56,8 @@ public class MovesCalculator {
 
     private static Collection<ChessMove> kingMoves(ChessBoard board, ChessPosition myPosition) {
         int[][] directions = {{1,1},{-1,1},{1,-1},{-1,-1},{1,0},{-1,0},{0,-1},{0,1}};
-        return linearMoves(false, board, myPosition, directions);
+        Collection<ChessMove> moves = linearMoves(false, board, myPosition, directions);
+        return moves;
     }
 
     private static Collection<ChessMove> queenMoves(ChessBoard board, ChessPosition myPosition) {
