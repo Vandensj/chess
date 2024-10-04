@@ -115,13 +115,16 @@ public class ChessGame {
                 break;
         }
 
+        // Test if each potential move is valid
         for (ChessMove move : potentialMoves) {
             ChessPiece capturedPiece = gameBoard.doMove(move);
 
+            // If move puts king in check it is not valid
             if (!isInCheck(team)) {
                 validMoves.add(move);
             }
 
+            // Undo move after check
             gameBoard.undoMove(move, capturedPiece);
         }
 

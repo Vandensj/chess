@@ -33,9 +33,10 @@ public class ChessBoard {
             piece = this.getPiece(move.getStartPosition());
         }
 
-        // Check if An Passant or Castling
+        // Check if En Passant or Castling
         switch (this.getPiece(move.getStartPosition()).getPieceType()) {
             case PAWN:
+                // If En Passant capture make sure to erase piece in capture position
                 if (abs(move.getStartPosition().getColumn() - move.getEndPosition().getColumn()) > 0 && this.getPiece(move.getEndPosition()) == null) {
                     capturedPosition = new ChessPosition(move.getStartPosition().getRow(), move.getEndPosition().getColumn());
                     capturedPiece = this.getPiece(capturedPosition);
@@ -43,6 +44,7 @@ public class ChessBoard {
                 }
                 break;
             case KING:
+                // Castling move (set captured piece to own rook for easier implementation)
                 if (abs(move.getStartPosition().getColumn() - move.getEndPosition().getColumn()) > 1) {
                     if (move.getEndPosition().getColumn() == 3) {
                         capturedPosition = new ChessPosition((piece.getTeamColor() == ChessGame.TeamColor.WHITE ? 1:8),1);
@@ -72,6 +74,7 @@ public class ChessBoard {
         this.addPiece(move.getEndPosition(), null);
         this.addPiece(capturedPosition, capturedPiece);
 
+        // If move was Castling make sure to erase rook
         if (piece.getPieceType() == ChessPiece.PieceType.KING && abs(move.getEndPosition().getColumn() - move.getStartPosition().getColumn()) > 1) {
             if (move.getEndPosition().getColumn() == 3) {
                 this.addPiece(new ChessPosition(move.getStartPosition().getRow(), 4), null);
@@ -81,6 +84,7 @@ public class ChessBoard {
         }
     }
 
+    // Used to get the positions of all pieces on a team (used in calculating check)
     public Collection<ChessPosition> getPieces(ChessGame.TeamColor teamColor) {
         Collection<ChessPosition> pieces = new ArrayList<>();
         for (int i = 0; i < 8; i++) {
