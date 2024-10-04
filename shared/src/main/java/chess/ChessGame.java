@@ -228,6 +228,13 @@ public class ChessGame {
      */
     public void setBoard(ChessBoard board) {
         gameBoard = board;
+        blackKingMoved = false;
+        whiteKingMoved = false;
+        blackLeftRookMoved = false;
+        whiteLeftRookMoved = false;
+        blackRightRookMoved = false;
+        whiteRightRookMoved = false;
+        pawnMovedTwo = null;
     }
 
     /**
