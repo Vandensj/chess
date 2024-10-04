@@ -33,7 +33,7 @@ public class ChessBoard {
             piece = this.getPiece(move.getStartPosition());
         }
 
-        // Check if en pessant or castling
+        // Check if An Passant or Castling
         switch (this.getPiece(move.getStartPosition()).getPieceType()) {
             case PAWN:
                 if (abs(move.getStartPosition().getColumn() - move.getEndPosition().getColumn()) > 0 && this.getPiece(move.getEndPosition()) == null) {
@@ -91,17 +91,6 @@ public class ChessBoard {
             }
         }
         return pieces;
-    }
-
-    public ChessPosition getKing(ChessGame.TeamColor teamColor) {
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (squares[i][j] != null && teamColor == squares[i][j].getTeamColor() && squares[i][j].getPieceType() == ChessPiece.PieceType.KING) {
-                    return new ChessPosition(i+1, j+1);
-                }
-            }
-        }
-        return null;
     }
 
     /**
@@ -193,7 +182,6 @@ public class ChessBoard {
                 case QUEEN -> "Q";
                 case KING -> "K";
                 case PAWN -> "P";
-                default -> "";
             };
         } else {
             return switch (piece.getPieceType()) {
@@ -203,7 +191,6 @@ public class ChessBoard {
                 case QUEEN -> "q";
                 case KING -> "k";
                 case PAWN -> "p";
-                default -> "";
             };
         }
     }

@@ -3,7 +3,6 @@ package chess;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static chess.ChessPiece.PieceType.PAWN;
 import static chess.ChessPiece.PieceType.ROOK;
 import static java.lang.Math.abs;
 
@@ -75,6 +74,7 @@ public class ChessGame {
         // Add special moves
         switch (gameBoard.getPiece(startPosition).getPieceType()) {
             case PAWN:
+                // En Passant move check
                 if (pawnMovedTwo != null) {
                     if (pawnMovedTwo.getRow() == startPosition.getRow() && abs(pawnMovedTwo.getColumn() - startPosition.getColumn()) < 2) {
                         potentialMoves.add(new ChessMove(startPosition, new ChessPosition((gameBoard.getPiece(startPosition).getTeamColor() == TeamColor.BLACK ? (pawnMovedTwo.getRow() - 1):(pawnMovedTwo.getRow() + 1)), pawnMovedTwo.getColumn()), null));
@@ -82,6 +82,7 @@ public class ChessGame {
                 }
                 break;
             case KING:
+                // Castling move check
                 if (isInCheck(team))
                     break;
                 if (gameBoard.getPiece(startPosition).getTeamColor() == TeamColor.WHITE) {
@@ -104,7 +105,6 @@ public class ChessGame {
                             && !isInDanger(team, new ChessPosition(8,4))) {
                         potentialMoves.add(new ChessMove(startPosition, new ChessPosition(8,3), null));
                     }
-                    // problem????????
                     if (!blackRightRookMoved && !blackKingMoved && gameBoard.getPiece(new ChessPosition(8,6)) == null
                             && gameBoard.getPiece(new ChessPosition(8,7)) == null && 8 == startPosition.getRow() && 5 == startPosition.getColumn()
                             && gameBoard.getPiece(new ChessPosition(8,8)).getPieceType() == ROOK
@@ -143,6 +143,7 @@ public class ChessGame {
         if (validMoves == null || !validMoves.contains(move)) {
             throw new InvalidMoveException();
         }
+        // This needs to be set every move so En Passant is only valid the turn after
         pawnMovedTwo = null;
 
         checkMove(move);
@@ -166,6 +167,7 @@ public class ChessGame {
         return false;
     }
 
+    // Check if the piece of teamColor in position piecePosition is in danger (used for castling)
     public boolean isInDanger(TeamColor teamColor, ChessPosition piecePosition) {
         Collection<ChessPosition> enemyPositions = gameBoard.getPieces((teamColor == TeamColor.BLACK) ? TeamColor.WHITE : TeamColor.BLACK);
         for (ChessPosition position : enemyPositions) {
@@ -246,6 +248,7 @@ public class ChessGame {
         return gameBoard;
     }
 
+    // Used to set special moves variables (mainly to keep track of if kings and rooks have moved, as well as keep track of the pawn that just moved two)
     private void checkMove(ChessMove move) {
         ChessPiece piece = gameBoard.getPiece(move.getStartPosition());
         switch (piece.getPieceType()) {
