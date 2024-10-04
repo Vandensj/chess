@@ -32,6 +32,7 @@ public class ChessBoard {
         } else {
             piece = this.getPiece(move.getStartPosition());
         }
+
         // Check if en pessant or castling
         switch (this.getPiece(move.getStartPosition()).getPieceType()) {
             case PAWN:
@@ -43,12 +44,20 @@ public class ChessBoard {
                 break;
             case KING:
                 if (abs(move.getStartPosition().getColumn() - move.getEndPosition().getColumn()) > 1) {
-                    if (this.getPiece(move.getStartPosition()).getTeamColor() == ChessGame.TeamColor.WHITE) {
-
-                    } else {
-
+                    if (move.getEndPosition().getColumn() == 3) {
+                        capturedPosition = new ChessPosition((piece.getTeamColor() == ChessGame.TeamColor.WHITE ? 1:8),1);
+                        capturedPiece = this.getPiece(capturedPosition);
+                        this.addPiece(new ChessPosition((piece.getTeamColor() == ChessGame.TeamColor.WHITE ? 1:8),4), capturedPiece);
+                        this.addPiece(capturedPosition, null);
+                    } else if (move.getEndPosition().getColumn() == 7) {
+                        capturedPosition = new ChessPosition((piece.getTeamColor() == ChessGame.TeamColor.WHITE ? 1:8),8);
+                        capturedPiece = this.getPiece(capturedPosition);
+                        this.addPiece(new ChessPosition((piece.getTeamColor() == ChessGame.TeamColor.WHITE ? 1:8),6), capturedPiece);
+                        this.addPiece(capturedPosition, null);
                     }
                 }
+                break;
+            default:
                 break;
         }
 
@@ -60,7 +69,16 @@ public class ChessBoard {
     public void undoMove(ChessMove move, ChessPiece capturedPiece) {
         ChessPiece piece = this.getPiece(move.getEndPosition());
         this.addPiece(move.getStartPosition(), piece);
+        this.addPiece(move.getEndPosition(), null);
         this.addPiece(capturedPosition, capturedPiece);
+
+        if (piece.getPieceType() == ChessPiece.PieceType.KING && abs(move.getEndPosition().getColumn() - move.getStartPosition().getColumn()) > 1) {
+            if (move.getEndPosition().getColumn() == 3) {
+                this.addPiece(new ChessPosition(move.getStartPosition().getRow(), 4), null);
+            } else {
+                this.addPiece(new ChessPosition(move.getStartPosition().getRow(), 6), null);
+            }
+        }
     }
 
     public Collection<ChessPosition> getPieces(ChessGame.TeamColor teamColor) {

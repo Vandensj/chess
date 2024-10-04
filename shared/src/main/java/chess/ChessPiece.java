@@ -65,6 +65,15 @@ public class ChessPiece {
         return false;
     }
 
+    public Boolean canKillPiece(ChessBoard board, ChessPosition myPosition, ChessPosition piecePosition) {
+        Collection<ChessMove> moves = pieceMoves(board, myPosition);
+        for (ChessMove move : moves) {
+            if (move.getEndPosition().equals(piecePosition))
+                return true;
+        }
+        return false;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
