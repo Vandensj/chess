@@ -4,11 +4,11 @@ import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.UserDAO;
 
-public class UserLoginService {
+public class UserService {
     private final UserDAO userDAO;
     private final AuthDAO authDAO;
 
-    public UserLoginService(UserDAO userDAO, AuthDAO authDAO) {
+    public UserService(UserDAO userDAO, AuthDAO authDAO) {
         this.userDAO = userDAO;
         this.authDAO = authDAO;
     }

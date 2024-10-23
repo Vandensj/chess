@@ -14,8 +14,8 @@ public class Server {
 
     private RegisterService registerService;
     private ClearService clearService;
-    private UserLoginService loginService;
-    private ListGamesService listGamesService;
+    private UserService userService;
+    private GameService gameService;
     private final Gson gson = new Gson();
 
     public int run(int desiredPort) {
@@ -26,8 +26,8 @@ public class Server {
 
         registerService = new RegisterService(userDAO, authDAO);
         clearService = new ClearService(gameDAO, authDAO, userDAO);
-        loginService = new service.UserLoginService(userDAO, authDAO);
-        listGamesService = new ListGamesService(userDAO, gameDAO, authDAO);
+        userService = new UserService(userDAO, authDAO);
+        gameService = new GameService(userDAO, gameDAO, authDAO);
 
         Spark.port(desiredPort);
 
@@ -39,6 +39,8 @@ public class Server {
         Spark.post("/session", this::loginHandler);
         Spark.delete("/session", this::logoutHandler);
         Spark.get("/game", this::listGamesHandler);
+        Spark.post("/game", this::createGameHandler);
+        Spark.put("/game", this::joinGameHandler);
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
@@ -47,11 +49,58 @@ public class Server {
         return Spark.port();
     }
 
+    private Object joinGameHandler(Request request, Response response) {
+        try {
+            JoinGameRequest joinGameRequest = gson.fromJson(request.body(), JoinGameRequest.class);
+            String authToken = request.headers("Authorization");
+            gameService.verifyAuthToken(authToken);
+
+            gameService.joinGame(authToken, joinGameRequest.gameID(), joinGameRequest.playerColor());
+            response.status(200);
+            response.body("");
+            return "";
+        }
+        catch (DataAccessException e) {
+            response.status(401);
+            return "{\"message\": \"Error: unauthorized\"}";
+        }
+        catch (IllegalArgumentException e) {
+            response.status(400);
+            return "{\"message\": \"Error: bad request\"}";
+        }
+        catch (IllegalAccessError e) {
+            response.status(403);
+            return "{\"message\": \"Error: bad request\"}";
+        }
+    }
+
+
+    private Object createGameHandler(Request request, Response response) {
+        try {
+            String authToken = request.headers("Authorization");
+            gameService.verifyAuthToken(authToken);
+
+            Integer gameID = gameService.createGame(request.body());
+
+
+            response.status(200);
+            response.body(gameID.toString());
+            return gameID.toString();
+        } catch (DataAccessException e) {
+            response.status(401);
+            return "{\"message\": \"Error: unauthorized\"}";
+        }
+        catch (IllegalArgumentException e) {
+            response.status(400);
+            return "{\"message\": \"Error: bad request\"}";
+        }
+    }
+
     private Object listGamesHandler(Request request, Response response) {
         try {
             String authToken = request.headers("Authorization");
-            listGamesService.verifyAuthToken(authToken);
-            List<GameData> gamesList = listGamesService.listGames(authToken);
+            gameService.verifyAuthToken(authToken);
+            List<GameData> gamesList = gameService.listGames(authToken);
 
             ListGamesResponse listGamesResponse = new ListGamesResponse(gamesList);
             response.status(200);
@@ -72,7 +121,7 @@ public class Server {
         try {
             String authToken = request.headers("Authorization");
 
-            loginService.logoutUser(authToken);
+            userService.logoutUser(authToken);
 
             response.status(200);
             return "";
@@ -87,7 +136,7 @@ public class Server {
         try {
             LoginRequest loginRequest = gson.fromJson(request.body(), LoginRequest.class);
 
-            String authToken = loginService.loginUser(loginRequest.getUsername(), loginRequest.getPassword());
+            String authToken = userService.loginUser(loginRequest.getUsername(), loginRequest.getPassword());
             LoginResponse loginResponse = new LoginResponse(loginRequest.getUsername(), authToken);
 
             response.type("application/json");

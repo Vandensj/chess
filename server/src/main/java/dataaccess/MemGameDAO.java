@@ -57,6 +57,10 @@ public class MemGameDAO implements GameDAO {
         }
     }
 
+    public Boolean verifyGame(Integer gameID) throws DataAccessException {
+        return games.get(gameID) != null;
+    }
+
     @Override
     public Integer getSize() throws DataAccessException {
         return games.size();

@@ -17,4 +17,6 @@ public interface GameDAO {
     void updateGame(ChessGame.TeamColor playerColor, Integer gameID, String username) throws DataAccessException;
 
     Integer getSize() throws DataAccessException;
+
+    public Boolean verifyGame(Integer gameID) throws DataAccessException;
 }
