@@ -4,6 +4,7 @@ import model.UserData;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class MemUserDOA implements UserDAO {
     protected static Map<String, UserData> users = new HashMap<>();
@@ -16,7 +17,7 @@ public class MemUserDOA implements UserDAO {
 
     @Override
     public UserData getUser(String username, String password) throws DataAccessException {
-        if (users.containsKey(username)) {
+        if (users.containsKey(username) && Objects.equals(users.get(username).password(), password)) {
             return users.get(username);
         }
         return null;

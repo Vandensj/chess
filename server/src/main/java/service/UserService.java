@@ -24,6 +24,9 @@ public class UserService {
     }
 
     public void logoutUser(String token) throws DataAccessException {
+        if (!authDAO.verifyAuthToken(token)) {
+            throw new DataAccessException("Invalid token");
+        }
         authDAO.deleteAuthToken(token);
     }
 }
