@@ -24,18 +24,21 @@ public class GameService {
     }
 
     public List<GameData> listGames(String authToken) throws DataAccessException {
+        if (!authDAO.verifyAuthToken(authToken)) {
+            throw new DataAccessException("Invalid Auth Token");
+        }
         return gameDAO.listGames();
     }
 
     public Integer createGame(String gameName) throws DataAccessException {
-        if (gameName == null) {
+        if (gameName == null || gameName.trim().isEmpty()) {
             throw new IllegalArgumentException("Invalid parameter");
         }
 
         return gameDAO.createGame(gameName);
     }
 
-    public void joinGame(String authToken, Integer gameID, ChessGame.TeamColor playerColor) throws DataAccessException {
+    public void joinGame(String authToken, Integer gameID, ChessGame.TeamColor playerColor) throws Exception {
         String username = authDAO.getUsername(authToken);
         if (!gameDAO.verifyGame(gameID)) {
             throw new IllegalArgumentException("Error: bad request");
@@ -50,7 +53,7 @@ public class GameService {
 
         if ((playerColor == ChessGame.TeamColor.WHITE && gameData.whiteUsername() != null) ||
                 (playerColor == ChessGame.TeamColor.BLACK && gameData.blackUsername() != null)) {
-            throw new IllegalAccessError("Error: Player color already taken.");
+            throw new IllegalAccessException("Error: Player color already taken.");
         }
 
         gameDAO.updateGame(playerColor, gameID, username);

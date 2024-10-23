@@ -18,7 +18,7 @@ public class RegisterService {
         if (username == null || password == null || email == null || username.isEmpty() || password.isEmpty() || email.isEmpty()) {
             throw new IllegalArgumentException("Username, password, and email are required");
         }
-        if (!userDAO.verifyUser(username)) {
+        if (userDAO.verifyUser(username)) {
             throw new DataAccessException("Username is already taken");
         }
         userDAO.createUser(username, password, email);

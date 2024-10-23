@@ -68,9 +68,11 @@ public class Server {
             response.status(400);
             return "{\"message\": \"Error: bad request\"}";
         }
-        catch (IllegalAccessError e) {
+        catch (IllegalAccessException e) {
             response.status(403);
             return "{\"message\": \"Error: bad request\"}";
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
