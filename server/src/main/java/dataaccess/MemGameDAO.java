@@ -1,8 +1,7 @@
 package dataaccess;
 
 import chess.ChessGame;
-import chess.ChessMove;
-import dataaccess.datatypes.GameData;
+import model.GameData;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,12 +40,21 @@ public class MemGameDAO implements GameDAO {
 
     @Override
     public void updateGame(ChessGame.TeamColor playerColor, Integer gameID, String username) throws DataAccessException {
-        games.get(gameID).whiteUsername() = username;
-    }
-
-    @Override
-    public ChessGame makeChessMove(ChessMove move, Integer gameID) throws DataAccessException {
-        return null;
+        if (playerColor == ChessGame.TeamColor.BLACK) {
+            GameData gameData = games.get(gameID);
+            String whiteUsername = gameData.whiteUsername();
+            String gameName = gameData.gameName();
+            ChessGame game = gameData.game();
+            games.remove(gameID);
+            games.put(gameID, new GameData(gameID, whiteUsername, username, gameName, game));
+        } else {
+            GameData gameData = games.get(gameID);
+            String blackUsername = gameData.blackUsername();
+            String gameName = gameData.gameName();
+            ChessGame game = gameData.game();
+            games.remove(gameID);
+            games.put(gameID, new GameData(gameID, username, blackUsername, gameName, game));
+        }
     }
 
     @Override

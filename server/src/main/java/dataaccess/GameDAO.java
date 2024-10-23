@@ -1,7 +1,7 @@
 package dataaccess;
 
 import chess.*;
-import dataaccess.datatypes.GameData;
+import model.GameData;
 
 import java.util.List;
 
@@ -15,8 +15,6 @@ public interface GameDAO {
     List<GameData> listGames() throws DataAccessException;
 
     void updateGame(ChessGame.TeamColor playerColor, Integer gameID, String username) throws DataAccessException;
-
-    ChessGame makeChessMove(ChessMove move, Integer gameID) throws DataAccessException;
 
     Integer getSize() throws DataAccessException;
 }

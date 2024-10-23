@@ -3,6 +3,7 @@ package server;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import dataaccess.MemAuthDAO;
+import dataaccess.MemGameDAO;
 import dataaccess.MemUserDOA;
 import server.requests.RegisterRequest;
 import server.responses.RegisterResponse;
@@ -18,9 +19,10 @@ public class Server {
 
         MemUserDOA userDAO = new MemUserDOA();
         MemAuthDAO authDAO = new MemAuthDAO();
+        MemGameDAO gameDAO = new MemGameDAO();
 
         registerService = new RegisterService(userDAO, authDAO);
-        clearService = new ClearService(userDAO, authDAO, gameDAO);
+        //clearService = new ClearService(userDAO, authDAO, gameDAO);
 
         Spark.port(desiredPort);
 
