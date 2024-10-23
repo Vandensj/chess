@@ -10,4 +10,6 @@ public interface AuthDAO {
     void deleteAuthToken(String authToken) throws DataAccessException;
 
     Integer getSize() throws DataAccessException;
+
+    public Boolean verifyAuthToken(String authToken) throws DataAccessException;
 }

@@ -36,4 +36,9 @@ public class MemAuthDAO implements AuthDAO {
     public Integer getSize() throws DataAccessException {
         return authentications.size();
     }
+
+    @Override
+    public Boolean verifyAuthToken(String authToken) throws DataAccessException {
+        return authentications.containsKey(authToken);
+    }
 }

@@ -1,23 +1,21 @@
 package server;
 
 import com.google.gson.Gson;
-import dataaccess.DataAccessException;
-import dataaccess.MemAuthDAO;
-import dataaccess.MemGameDAO;
-import dataaccess.MemUserDOA;
-import org.eclipse.jetty.security.LoginService;
-import server.requests.LoginRequest;
-import server.requests.RegisterRequest;
-import server.responses.LoginResponse;
-import server.responses.RegisterResponse;
-import service.ClearService;
-import service.RegisterService;
+import dataaccess.*;
+import model.GameData;
+import server.requests.*;
+import server.responses.*;
+import service.*;
 import spark.*;
+
+import java.util.List;
 
 public class Server {
 
     private RegisterService registerService;
     private ClearService clearService;
+    private UserLoginService loginService;
+    private ListGamesService listGamesService;
     private final Gson gson = new Gson();
 
     public int run(int desiredPort) {
@@ -28,7 +26,8 @@ public class Server {
 
         registerService = new RegisterService(userDAO, authDAO);
         clearService = new ClearService(gameDAO, authDAO, userDAO);
-        loginService = new LoginService(userDAO, authDAO);
+        loginService = new service.UserLoginService(userDAO, authDAO);
+        listGamesService = new ListGamesService(userDAO, gameDAO, authDAO);
 
         Spark.port(desiredPort);
 
@@ -38,12 +37,50 @@ public class Server {
         Spark.post("/user", this::registerHandler);
         Spark.delete("/db", this::clearHandler);
         Spark.post("/session", this::loginHandler);
+        Spark.delete("/session", this::logoutHandler);
+        Spark.get("/game", this::listGamesHandler);
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
 
         Spark.awaitInitialization();
         return Spark.port();
+    }
+
+    private Object listGamesHandler(Request request, Response response) {
+        try {
+            String authToken = request.headers("Authorization");
+            listGamesService.verifyAuthToken(authToken);
+            List<GameData> gamesList = listGamesService.listGames(authToken);
+
+            ListGamesResponse listGamesResponse = new ListGamesResponse(gamesList);
+            response.status(200);
+            response.type("application/json");
+
+            return gson.toJson(listGamesResponse);
+        } catch (DataAccessException e) {
+            response.status(401);
+            return "{\"message\": \"Error: unauthorized\"}";
+        }
+        catch (IllegalArgumentException e) {
+            response.status(400);
+            return "{\"message\": \"Error: bad request\"}";
+        }
+    }
+
+    private Object logoutHandler(Request request, Response response) {
+        try {
+            String authToken = request.headers("Authorization");
+
+            loginService.logoutUser(authToken);
+
+            response.status(200);
+            return "";
+        } catch (DataAccessException error) {
+            response.status(401);
+            response.body("{\"message\": \"Error: unauthorized\"}");
+            return "{\"message\": \"Error: unauthorized\"}";
+        }
     }
 
     private Object loginHandler(Request request, Response response) {
@@ -60,6 +97,7 @@ public class Server {
         } catch (DataAccessException error) {
             response.status(401);
             response.body("{\"message\": \"Error: unauthorized\"}");
+            return "{\"message\": \"Error: unauthorized\"}";
         }
     }
 
