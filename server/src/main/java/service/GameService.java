@@ -38,14 +38,14 @@ public class GameService {
     public void joinGame(String authToken, Integer gameID, ChessGame.TeamColor playerColor) throws DataAccessException {
         String username = authDAO.getUsername(authToken);
         if (!gameDAO.verifyGame(gameID)) {
-            throw new DataAccessException("Error: bad request");
+            throw new IllegalArgumentException("Error: bad request");
         }
 
         GameData gameData = gameDAO.getGame(gameID);
 
 
         if ((playerColor != ChessGame.TeamColor.WHITE) && (playerColor != ChessGame.TeamColor.BLACK)) {
-            throw new DataAccessException("Error: Invalid team color");
+            throw new IllegalArgumentException("Error: Invalid team color");
         }
 
         if ((playerColor == ChessGame.TeamColor.WHITE && gameData.whiteUsername() != null) ||
