@@ -7,12 +7,14 @@ import dataaccess.MemGameDAO;
 import dataaccess.MemUserDOA;
 import server.requests.RegisterRequest;
 import server.responses.RegisterResponse;
+import service.ClearService;
 import service.RegisterService;
 import spark.*;
 
 public class Server {
 
     private RegisterService registerService;
+    private ClearService clearService;
     private final Gson gson = new Gson();
 
     public int run(int desiredPort) {
@@ -22,7 +24,7 @@ public class Server {
         MemGameDAO gameDAO = new MemGameDAO();
 
         registerService = new RegisterService(userDAO, authDAO);
-        //clearService = new ClearService(userDAO, authDAO, gameDAO);
+        clearService = new ClearService(gameDAO, authDAO, userDAO);
 
         Spark.port(desiredPort);
 
@@ -45,12 +47,17 @@ public class Server {
     }
 
     private Object clearHandler(Request request, Response response) {
+        try {
+            clearService.clear();
 
-
-
-        response.status(200);
-        response.body("");
-        return "";
+            response.status(200);
+            response.body("");
+            return "";
+        } catch (DataAccessException error) {
+            response.status(403);
+            response.body("{\"message\": \"Error: no object found\"}");
+            return "{\"message\": \"Error: no object found\"}";
+        }
     }
 
     private Object registerHandler(Request req, Response res) {
