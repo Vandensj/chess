@@ -5,7 +5,10 @@ import dataaccess.DataAccessException;
 import dataaccess.MemAuthDAO;
 import dataaccess.MemGameDAO;
 import dataaccess.MemUserDOA;
+import org.eclipse.jetty.security.LoginService;
+import server.requests.LoginRequest;
 import server.requests.RegisterRequest;
+import server.responses.LoginResponse;
 import server.responses.RegisterResponse;
 import service.ClearService;
 import service.RegisterService;
@@ -25,6 +28,7 @@ public class Server {
 
         registerService = new RegisterService(userDAO, authDAO);
         clearService = new ClearService(gameDAO, authDAO, userDAO);
+        loginService = new LoginService(userDAO, authDAO);
 
         Spark.port(desiredPort);
 
@@ -33,6 +37,7 @@ public class Server {
         // Register your endpoints and handle exceptions here.
         Spark.post("/user", this::registerHandler);
         Spark.delete("/db", this::clearHandler);
+        Spark.post("/session", this::loginHandler);
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
@@ -41,9 +46,21 @@ public class Server {
         return Spark.port();
     }
 
-    public void stop() {
-        Spark.stop();
-        Spark.awaitStop();
+    private Object loginHandler(Request request, Response response) {
+        try {
+            LoginRequest loginRequest = gson.fromJson(request.body(), LoginRequest.class);
+
+            String authToken = loginService.loginUser(loginRequest.getUsername(), loginRequest.getPassword());
+            LoginResponse loginResponse = new LoginResponse(loginRequest.getUsername(), authToken);
+
+            response.type("application/json");
+            response.status(200);
+
+            return gson.toJson(loginResponse);
+        } catch (DataAccessException error) {
+            response.status(401);
+            response.body("{\"message\": \"Error: unauthorized\"}");
+        }
     }
 
     private Object clearHandler(Request request, Response response) {
@@ -54,7 +71,7 @@ public class Server {
             response.body("");
             return "";
         } catch (DataAccessException error) {
-            response.status(403);
+            response.status(500);
             response.body("{\"message\": \"Error: no object found\"}");
             return "{\"message\": \"Error: no object found\"}";
         }
@@ -69,6 +86,7 @@ public class Server {
             RegisterResponse regRes = new RegisterResponse(regReq.getUsername(), authToken);
 
             res.type("application/json");
+            res.status(200);
 
             return gson.toJson(regRes);
         }
@@ -82,5 +100,10 @@ public class Server {
             res.body("{\"message\": \"Error: Invalid username, email, or password\"}");
             return "{\"message\": \"Error: Invalid username, email, or password\"}";
         }
+    }
+
+    public void stop() {
+        Spark.stop();
+        Spark.awaitStop();
     }
 }
