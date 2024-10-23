@@ -82,10 +82,11 @@ public class Server {
 
             Integer gameID = gameService.createGame(request.body());
 
-
+            CreateGameResponse gameResponse = new CreateGameResponse(gameID);
             response.status(200);
-            response.body(gameID.toString());
-            return gameID.toString();
+            response.type("application/json");
+
+            return gson.toJson(gameResponse);
         } catch (DataAccessException e) {
             response.status(401);
             return "{\"message\": \"Error: unauthorized\"}";
