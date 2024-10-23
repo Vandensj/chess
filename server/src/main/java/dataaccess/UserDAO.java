@@ -11,4 +11,6 @@ public interface UserDAO {
     void clear() throws DataAccessException;
 
     Integer getSize() throws DataAccessException;
+
+    Boolean verifyUser(String username) throws DataAccessException;
 }

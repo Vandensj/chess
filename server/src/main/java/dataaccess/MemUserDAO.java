@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class MemUserDOA implements UserDAO {
+public class MemUserDAO implements UserDAO {
     protected static Map<String, UserData> users = new HashMap<>();
 
     @Override
@@ -31,5 +31,10 @@ public class MemUserDOA implements UserDAO {
     @Override
     public Integer getSize() throws DataAccessException {
         return users.size();
+    }
+
+    @Override
+    public Boolean verifyUser(String username) throws DataAccessException {
+        return users.containsKey(username);
     }
 }

@@ -20,7 +20,7 @@ public class Server {
 
     public int run(int desiredPort) {
 
-        MemUserDOA userDAO = new MemUserDOA();
+        MemUserDAO userDAO = new MemUserDAO();
         MemAuthDAO authDAO = new MemAuthDAO();
         MemGameDAO gameDAO = new MemGameDAO();
 
