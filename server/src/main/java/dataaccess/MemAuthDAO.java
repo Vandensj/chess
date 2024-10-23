@@ -4,32 +4,36 @@ import dataaccess.datatypes.AuthData;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class MemAuthDAO implements AuthDAO {
     private static Map<String, AuthData> authentications = new HashMap<String, AuthData>();
 
     @Override
-    public void clear() {
+    public void clear() throws DataAccessException {
         authentications.clear();
     }
 
     @Override
-    public String getAuthToken(String username, String password) {
-        return "";
+    public String getUsername(String authToken) throws DataAccessException {
+        return authentications.get(authToken).username();
     }
 
     @Override
-    public String createAuthToken(String username) {
-        return "";
+    public String createAuthToken(String username) throws DataAccessException {
+        String authToken = UUID.randomUUID().toString();
+        AuthData authentication = new AuthData(username, authToken);
+        authentications.put(authToken, authentication);
+        return authToken;
     }
 
     @Override
-    public void deleteAuthToken(String authToken) {
+    public void deleteAuthToken(String authToken) throws DataAccessException {
         authentications.remove(authToken);
     }
 
     @Override
-    public Integer getSize() {
+    public Integer getSize() throws DataAccessException {
         return authentications.size();
     }
 }

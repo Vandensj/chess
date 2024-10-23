@@ -1,13 +1,13 @@
 package dataaccess;
 
 public interface AuthDAO {
-    void clear();
+    void clear() throws DataAccessException;
 
-    String getAuthToken(String username, String password) throws DataAccessException;
+    public String getUsername(String authToken) throws DataAccessException;
 
-    String createAuthToken(String username);
+    String createAuthToken(String username) throws DataAccessException;
 
-    void deleteAuthToken(String authToken);
+    void deleteAuthToken(String authToken) throws DataAccessException;
 
-    Integer getSize();
+    Integer getSize() throws DataAccessException;
 }

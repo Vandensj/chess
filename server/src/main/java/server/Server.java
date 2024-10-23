@@ -2,6 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
+import dataaccess.MemAuthDAO;
 import dataaccess.MemUserDOA;
 import server.requests.RegisterRequest;
 import server.responses.RegisterResponse;
@@ -16,18 +17,18 @@ public class Server {
     public int run(int desiredPort) {
 
         MemUserDOA userDAO = new MemUserDOA();
-        registerService = new RegisterService(userDAO, null);
+        MemAuthDAO authDAO = new MemAuthDAO();
+
+        registerService = new RegisterService(userDAO, authDAO);
+        clearService = new ClearService(userDAO, authDAO, gameDAO);
 
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
 
         // Register your endpoints and handle exceptions here.
-        Spark.get("/test", (Request req, Response res)->{
-            res.body("Hello");
-            return "hello";
-        });
         Spark.post("/user", this::registerHandler);
+        Spark.delete("/db", this::clearHandler);
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
@@ -39,6 +40,15 @@ public class Server {
     public void stop() {
         Spark.stop();
         Spark.awaitStop();
+    }
+
+    private Object clearHandler(Request request, Response response) {
+
+
+
+        response.status(200);
+        response.body("");
+        return "";
     }
 
     private Object registerHandler(Request req, Response res) {
@@ -54,9 +64,14 @@ public class Server {
             return gson.toJson(regRes);
         }
         catch (DataAccessException error) {
-            res.status(4033);
+            res.status(403);
             res.body("{\"message\": \"Error: username already in use\"}");
             return "{\"message\": \"Error: username already in use\"}";
+        }
+        catch (IllegalArgumentException error) {
+            res.status(400);
+            res.body("{\"message\": \"Error: Invalid username, email, or password\"}");
+            return "{\"message\": \"Error: Invalid username, email, or password\"}";
         }
     }
 }
