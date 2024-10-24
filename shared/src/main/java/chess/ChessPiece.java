@@ -23,12 +23,7 @@ public class ChessPiece {
      * The various different chess piece options
      */
     public enum PieceType {
-        KING,
-        QUEEN,
-        BISHOP,
-        KNIGHT,
-        ROOK,
-        PAWN
+        KING, QUEEN, BISHOP, KNIGHT, ROOK, PAWN
     }
 
     /**
@@ -59,8 +54,10 @@ public class ChessPiece {
     public Boolean canKillKing(ChessBoard board, ChessPosition myPosition) {
         Collection<ChessMove> moves = pieceMoves(board, myPosition);
         for (ChessMove move : moves) {
-            if (board.getPiece(move.getEndPosition()) != null && board.getPiece(move.getEndPosition()).type == PieceType.KING)
+            if (board.getPiece(move.getEndPosition()) != null && board.getPiece(
+                    move.getEndPosition()).type == PieceType.KING) {
                 return true;
+            }
         }
         return false;
     }
@@ -68,16 +65,21 @@ public class ChessPiece {
     public Boolean canKillPiece(ChessBoard board, ChessPosition myPosition, ChessPosition piecePosition) {
         Collection<ChessMove> moves = pieceMoves(board, myPosition);
         for (ChessMove move : moves) {
-            if (move.getEndPosition().equals(piecePosition))
+            if (move.getEndPosition().equals(piecePosition)) {
                 return true;
+            }
         }
         return false;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ChessPiece that = (ChessPiece) o;
         return pieceColor == that.pieceColor && type == that.type;
     }

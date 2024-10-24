@@ -4,7 +4,7 @@ public class LoginResponse {
     protected String authToken;
     protected String username;
 
-    public LoginResponse(String username,String authToken){
+    public LoginResponse(String username, String authToken) {
         this.username = username;
         this.authToken = authToken;
     }

@@ -18,7 +18,7 @@ public class GameService {
     }
 
     public void verifyAuthToken(String authToken) throws DataAccessException {
-        if(!authDAO.verifyAuthToken(authToken)) {
+        if (!authDAO.verifyAuthToken(authToken)) {
             throw new DataAccessException("Invalid Auth Token");
         }
     }
@@ -51,8 +51,7 @@ public class GameService {
             throw new IllegalArgumentException("Error: Invalid team color");
         }
 
-        if ((playerColor == ChessGame.TeamColor.WHITE && gameData.whiteUsername() != null) ||
-                (playerColor == ChessGame.TeamColor.BLACK && gameData.blackUsername() != null)) {
+        if ((playerColor == ChessGame.TeamColor.WHITE && gameData.whiteUsername() != null) || (playerColor == ChessGame.TeamColor.BLACK && gameData.blackUsername() != null)) {
             throw new IllegalAccessException("Error: Player color already taken.");
         }
 

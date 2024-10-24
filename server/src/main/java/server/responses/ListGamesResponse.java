@@ -1,6 +1,7 @@
 package server.responses;
 
 import model.GameData;
+
 import java.util.List;
 
 public class ListGamesResponse {

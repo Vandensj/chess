@@ -37,8 +37,10 @@ public class ChessBoard {
         switch (this.getPiece(move.getStartPosition()).getPieceType()) {
             case PAWN:
                 // If En Passant capture make sure to erase piece in capture position
-                if (abs(move.getStartPosition().getColumn() - move.getEndPosition().getColumn()) > 0 && this.getPiece(move.getEndPosition()) == null) {
-                    capturedPosition = new ChessPosition(move.getStartPosition().getRow(), move.getEndPosition().getColumn());
+                if (abs(move.getStartPosition().getColumn() - move.getEndPosition().getColumn()) > 0 && this.getPiece(
+                        move.getEndPosition()) == null) {
+                    capturedPosition = new ChessPosition(move.getStartPosition().getRow(),
+                            move.getEndPosition().getColumn());
                     capturedPiece = this.getPiece(capturedPosition);
                     this.addPiece(capturedPosition, null);
                 }
@@ -47,14 +49,18 @@ public class ChessBoard {
                 // Castling move (set captured piece to own rook for easier implementation)
                 if (abs(move.getStartPosition().getColumn() - move.getEndPosition().getColumn()) > 1) {
                     if (move.getEndPosition().getColumn() == 3) {
-                        capturedPosition = new ChessPosition((piece.getTeamColor() == ChessGame.TeamColor.WHITE ? 1:8),1);
+                        capturedPosition = new ChessPosition(
+                                (piece.getTeamColor() == ChessGame.TeamColor.WHITE ? 1 : 8), 1);
                         capturedPiece = this.getPiece(capturedPosition);
-                        this.addPiece(new ChessPosition((piece.getTeamColor() == ChessGame.TeamColor.WHITE ? 1:8),4), capturedPiece);
+                        this.addPiece(new ChessPosition((piece.getTeamColor() == ChessGame.TeamColor.WHITE ? 1 : 8), 4),
+                                capturedPiece);
                         this.addPiece(capturedPosition, null);
                     } else if (move.getEndPosition().getColumn() == 7) {
-                        capturedPosition = new ChessPosition((piece.getTeamColor() == ChessGame.TeamColor.WHITE ? 1:8),8);
+                        capturedPosition = new ChessPosition(
+                                (piece.getTeamColor() == ChessGame.TeamColor.WHITE ? 1 : 8), 8);
                         capturedPiece = this.getPiece(capturedPosition);
-                        this.addPiece(new ChessPosition((piece.getTeamColor() == ChessGame.TeamColor.WHITE ? 1:8),6), capturedPiece);
+                        this.addPiece(new ChessPosition((piece.getTeamColor() == ChessGame.TeamColor.WHITE ? 1 : 8), 6),
+                                capturedPiece);
                         this.addPiece(capturedPosition, null);
                     }
                 }
@@ -75,7 +81,8 @@ public class ChessBoard {
         this.addPiece(capturedPosition, capturedPiece);
 
         // If move was Castling make sure to erase rook
-        if (piece.getPieceType() == ChessPiece.PieceType.KING && abs(move.getEndPosition().getColumn() - move.getStartPosition().getColumn()) > 1) {
+        if (piece.getPieceType() == ChessPiece.PieceType.KING && abs(
+                move.getEndPosition().getColumn() - move.getStartPosition().getColumn()) > 1) {
             if (move.getEndPosition().getColumn() == 3) {
                 this.addPiece(new ChessPosition(move.getStartPosition().getRow(), 4), null);
             } else {
@@ -90,7 +97,7 @@ public class ChessBoard {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 if (squares[i][j] != null && teamColor == squares[i][j].getTeamColor()) {
-                    pieces.add(new ChessPosition(i+1, j+1));
+                    pieces.add(new ChessPosition(i + 1, j + 1));
                 }
             }
         }
@@ -104,7 +111,7 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        squares[position.getRow()-1][position.getColumn()-1] = piece;
+        squares[position.getRow() - 1][position.getColumn() - 1] = piece;
     }
 
     /**
@@ -115,7 +122,7 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        return squares[position.getRow()-1][position.getColumn()-1];
+        return squares[position.getRow() - 1][position.getColumn() - 1];
     }
 
     /**
@@ -150,8 +157,12 @@ public class ChessBoard {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ChessBoard that = (ChessBoard) o;
         return Objects.deepEquals(squares, that.squares);
     }
@@ -174,6 +185,7 @@ public class ChessBoard {
         }
         return sb.toString();
     }
+
     private String pieceString(ChessPiece piece) {
         if (piece == null) {
             return " ";

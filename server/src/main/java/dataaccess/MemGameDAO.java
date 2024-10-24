@@ -32,14 +32,15 @@ public class MemGameDAO implements GameDAO {
     @Override
     public List<GameData> listGames() throws DataAccessException {
         List<GameData> gameList = new ArrayList<GameData>();
-        for(Map.Entry<Integer, GameData> entry : games.entrySet()) {
+        for (Map.Entry<Integer, GameData> entry : games.entrySet()) {
             gameList.add(entry.getValue());
         }
         return gameList;
     }
 
     @Override
-    public void updateGame(ChessGame.TeamColor playerColor, Integer gameID, String username) throws DataAccessException {
+    public void updateGame(ChessGame.TeamColor playerColor, Integer gameID, String username)
+            throws DataAccessException {
         if (playerColor == ChessGame.TeamColor.BLACK) {
             GameData gameData = games.get(gameID);
             String whiteUsername = gameData.whiteUsername();

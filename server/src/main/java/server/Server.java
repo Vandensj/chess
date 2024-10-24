@@ -59,16 +59,13 @@ public class Server {
             response.status(200);
             response.body("");
             return "";
-        }
-        catch (DataAccessException e) {
+        } catch (DataAccessException e) {
             response.status(401);
             return "{\"message\": \"Error: unauthorized\"}";
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             response.status(400);
             return "{\"message\": \"Error: bad request\"}";
-        }
-        catch (IllegalAccessException e) {
+        } catch (IllegalAccessException e) {
             response.status(403);
             return "{\"message\": \"Error: bad request\"}";
         } catch (Exception e) {
@@ -92,8 +89,7 @@ public class Server {
         } catch (DataAccessException e) {
             response.status(401);
             return "{\"message\": \"Error: unauthorized\"}";
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             response.status(400);
             return "{\"message\": \"Error: bad request\"}";
         }
@@ -113,8 +109,7 @@ public class Server {
         } catch (DataAccessException e) {
             response.status(401);
             return "{\"message\": \"Error: unauthorized\"}";
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             response.status(400);
             return "{\"message\": \"Error: bad request\"}";
         }
@@ -171,7 +166,8 @@ public class Server {
         try {
             RegisterRequest regReq = gson.fromJson(req.body(), RegisterRequest.class);
 
-            String authToken = registerService.createUser(regReq.getUsername(), regReq.getPassword(), regReq.getEmail());
+            String authToken = registerService.createUser(regReq.getUsername(), regReq.getPassword(),
+                    regReq.getEmail());
 
             RegisterResponse regRes = new RegisterResponse(regReq.getUsername(), authToken);
 
@@ -179,13 +175,11 @@ public class Server {
             res.status(200);
 
             return gson.toJson(regRes);
-        }
-        catch (DataAccessException error) {
+        } catch (DataAccessException error) {
             res.status(403);
             res.body("{\"message\": \"Error: username already in use\"}");
             return "{\"message\": \"Error: username already in use\"}";
-        }
-        catch (IllegalArgumentException error) {
+        } catch (IllegalArgumentException error) {
             res.status(400);
             res.body("{\"message\": \"Error: Invalid username, email, or password\"}");
             return "{\"message\": \"Error: Invalid username, email, or password\"}";
