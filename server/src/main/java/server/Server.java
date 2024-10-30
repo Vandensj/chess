@@ -33,6 +33,10 @@ public class Server {
 
         Spark.staticFiles.location("web");
 
+        try {
+            DatabaseManager.createTables();
+        } catch (Exception e) {}
+
         // Register your endpoints and handle exceptions here.
         Spark.post("/user", this::registerHandler);
         Spark.delete("/db", this::clearHandler);
