@@ -51,12 +51,12 @@ public class SqlGameDAO implements GameDAO {
             preparedStatement.setInt(1, gameID);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
-                    int GameID = resultSet.getInt("gameId");
-                    String GameName = resultSet.getString("gameName");
-                    String WhiteUsername = resultSet.getString("whiteUsername");
-                    String BlackUsername = resultSet.getString("blackUsername");
+                    int gameIdResult = resultSet.getInt("gameId");
+                    String gameName = resultSet.getString("gameName");
+                    String whiteUsername = resultSet.getString("whiteUsername");
+                    String blackUsername = resultSet.getString("blackUsername");
                     ChessGame chessGame = new Gson().fromJson(resultSet.getString("chessGame"), ChessGame.class);
-                    return new GameData(GameID, WhiteUsername, BlackUsername, GameName, chessGame);
+                    return new GameData(gameIdResult, whiteUsername, blackUsername, gameName, chessGame);
                 }
             }
         } catch (SQLException e) {
@@ -73,12 +73,12 @@ public class SqlGameDAO implements GameDAO {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
-                int GameID = resultSet.getInt("gameId");
-                String GameName = resultSet.getString("gameName");
-                String WhiteUsername = resultSet.getString("whiteUsername");
-                String BlackUsername = resultSet.getString("blackUsername");
+                int gameIdResult = resultSet.getInt("gameId");
+                String gameName = resultSet.getString("gameName");
+                String whiteUsername = resultSet.getString("whiteUsername");
+                String blackUsername = resultSet.getString("blackUsername");
                 ChessGame chessGame = new Gson().fromJson(resultSet.getString("chessGame"), ChessGame.class);
-                games.add(new GameData(GameID, WhiteUsername, BlackUsername, GameName, chessGame));
+                games.add(new GameData(gameIdResult, whiteUsername, blackUsername, gameName, chessGame));
             }
         } catch (SQLException e) {
             throw new DataAccessException("Error listing games: " + e.getMessage());
