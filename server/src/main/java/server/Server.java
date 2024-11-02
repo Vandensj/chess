@@ -83,7 +83,7 @@ public class Server {
             String authToken = request.headers("Authorization");
             gameService.verifyAuthToken(authToken);
 
-            Integer gameID = gameService.createGame(request.body());
+            Integer gameID = gameService.createGame(gson.fromJson(request.body(), GameRequest.class).gameName());
 
             CreateGameResponse gameResponse = new CreateGameResponse(gameID);
             response.status(200);
