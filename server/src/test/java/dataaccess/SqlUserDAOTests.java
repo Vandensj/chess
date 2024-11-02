@@ -1,127 +1,94 @@
 package dataaccess;
 
+import model.UserData;
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class SqlUserDAOTests {
-    private AuthDAO authDAO;
+
+
     private UserDAO userDAO;
-    private Connection connection;
 
     @BeforeEach
     void setUp() throws SQLException, DataAccessException {
-        DatabaseManager.createTables();
-        connection = DatabaseManager.getConnection();
-        authDAO = new SqlAuthDAO();
         userDAO = new SqlUserDAO();
-        authDAO.clear();  // Start with a clean table
-        userDAO.clear();
-
-        try (PreparedStatement stmt = connection.prepareStatement("INSERT INTO user (username, password, email) VALUES (?, ?, ?)")) {
-            stmt.setString(1, "testUser");
-            stmt.setString(2, "password");
-            stmt.setString(3, "testEmail");
-            stmt.executeUpdate();
-            stmt.setString(1, "testUser2");
-            stmt.setString(2, "password2");
-            stmt.setString(3, "testEmail2");
-            stmt.executeUpdate();
-        }
+        userDAO.clear();  // Clear users before each test
     }
 
     @AfterEach
     void tearDown() throws SQLException, DataAccessException {
-        authDAO.clear();  // Clean up after tests
-        userDAO.clear();
-        connection.close();
+        userDAO.clear();  // Clean up after tests
+    }
+
+    // Test for creating a user
+    @Test
+    void testCreateUser_Success() throws DataAccessException {
+        userDAO.createUser("testUser", "password123", "test@example.com");
+        assertEquals(1, userDAO.getSize());  // Verify the user count is now 1
     }
 
     @Test
-    void testClear_Success() throws DataAccessException {
-        authDAO.createAuthToken("testUser");
-        assertEquals(1, authDAO.getSize());
-        authDAO.clear();
-        assertEquals(0, authDAO.getSize());
-    }
+    void testCreateUser_Fail() throws DataAccessException {
+        userDAO.createUser("testUser", "password123", "test@example.com");
 
-    @Test
-    void testGetUsername_Success() throws DataAccessException {
-        String authToken = authDAO.createAuthToken("testUser");
-        assertEquals("testUser", authDAO.getUsername(authToken));
-    }
-
-    @Test
-    void testGetUsername_Failure() throws DataAccessException {
-        assertNull(authDAO.getUsername("nonexistent_token"));
-    }
-
-    @Test
-    void testCreateAuthToken_Success() throws DataAccessException {
-        String authToken = authDAO.createAuthToken("testUser");
-        assertNotNull(authToken);
-        assertEquals("testUser", authDAO.getUsername(authToken));
-    }
-
-    @Test
-    void testCreateAuthToken_Failure() {
+        // Try to create the same user again and check for exception
         assertThrows(DataAccessException.class, () -> {
-            String token = new SqlAuthDAO().createAuthToken("");
-            assertNull(token);
+            userDAO.createUser("testUser", "password456", "test2@example.com");
         });
     }
 
+    // Test for getting a user
     @Test
-    void testDeleteAuthToken_Success() throws DataAccessException {
-        String authToken = authDAO.createAuthToken("testUser");
-        assertEquals("testUser", authDAO.getUsername(authToken));
-        authDAO.deleteAuthToken(authToken);
-        assertNull(authDAO.getUsername(authToken));
+    void testGetUser_Success() throws DataAccessException {
+        userDAO.createUser("testUser", "password123", "test@example.com");
+        UserData userData = userDAO.getUser("testUser", "password123");
+        assertNotNull(userData);
+        assertEquals("testUser", userData.username());
+        assertEquals("test@example.com", userData.email());
     }
 
     @Test
-    void testDeleteAuthToken_Failure() throws DataAccessException, SQLException {
-        String sql = "DROP TABLE auth";
-        try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.executeUpdate();
-        }
-        assertThrows(DataAccessException.class, () -> {
-            authDAO.deleteAuthToken(null);  // Null token should cause failure
-        });
-        DatabaseManager.createTables();
+    void testGetUser_Fail() throws DataAccessException {
+        userDAO.createUser("testUser", "password123", "test@example.com");
+        UserData userData = userDAO.getUser("testUser", "wrongPassword");
+        assertNull(userData);  // Should return null for wrong password
     }
 
+    // Test for getting size of users
     @Test
     void testGetSize_Success() throws DataAccessException {
-        authDAO.createAuthToken("testUser");
-        authDAO.createAuthToken("testUser2");
-        assertEquals(2, authDAO.getSize());
+        assertEquals(0, userDAO.getSize());  // Initially, size should be 0
+        userDAO.createUser("testUser", "password123", "test@example.com");
+        assertEquals(1, userDAO.getSize());  // After adding a user, size should be 1
     }
 
     @Test
-    void testGetSize_Failure() throws DataAccessException, SQLException {
-        String sql = "DROP TABLE auth";
-        try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.executeUpdate();
-        }
-        assertThrows(DataAccessException.class, () -> {
-            new SqlAuthDAO().getSize();  // Null connection should cause failure
-        });
-        DatabaseManager.createTables();
+    void testGetSize_Fail() throws DataAccessException {
+        userDAO.clear();  // Ensure the table is empty
+        assertEquals(0, userDAO.getSize());  // Should still return 0
+    }
+
+    // Test for verifying a user
+    @Test
+    void testVerifyUser_Success() throws DataAccessException {
+        userDAO.createUser("testUser", "password123", "test@example.com");
+        assertTrue(userDAO.verifyUser("testUser"));  // Should return true for existing user
     }
 
     @Test
-    void testVerifyAuthToken_Success() throws DataAccessException {
-        String authToken = authDAO.createAuthToken("testUser");
-        assertTrue(authDAO.verifyAuthToken(authToken));
+    void testVerifyUser_Fail() throws DataAccessException {
+        assertFalse(userDAO.verifyUser("nonExistentUser"));  // Should return false for non-existing user
     }
 
+    // Test for clearing users
     @Test
-    void testVerifyAuthToken_Failure() throws DataAccessException {
-        assertFalse(authDAO.verifyAuthToken("invalid_token"));
+    void testClear_Success() throws DataAccessException {
+        userDAO.createUser("testUser1", "password123", "test1@example.com");
+        userDAO.createUser("testUser2", "password456", "test2@example.com");
+
+        userDAO.clear();  // Clear the user table
+        assertEquals(0, userDAO.getSize());  // Ensure the table is empty
     }
 }

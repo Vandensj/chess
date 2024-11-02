@@ -10,7 +10,7 @@ import java.sql.SQLException;
 public class SqlUserDAO implements UserDAO {
     @Override
     public void createUser(String username, String password, String email) throws DataAccessException {
-        String sql = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO user (username, password, email) VALUES (?, ?, ?)";
         try (Connection connection = DatabaseManager.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, username);
@@ -25,7 +25,7 @@ public class SqlUserDAO implements UserDAO {
 
     @Override
     public UserData getUser(String username, String password) throws DataAccessException {
-        String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
+        String sql = "SELECT * FROM user WHERE username = ? AND password = ?";
         try (Connection connection = DatabaseManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, username);
@@ -54,7 +54,7 @@ public class SqlUserDAO implements UserDAO {
 
     @Override
     public Integer getSize() throws DataAccessException {
-        String sql = "SELECT COUNT(*) FROM users";
+        String sql = "SELECT COUNT(*) FROM user";
         try (Connection connection = DatabaseManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
