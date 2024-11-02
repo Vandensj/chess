@@ -20,9 +20,9 @@ public class Server {
 
     public int run(int desiredPort) {
 
-        MemUserDAO userDAO = new MemUserDAO();
-        MemAuthDAO authDAO = new MemAuthDAO();
-        MemGameDAO gameDAO = new MemGameDAO();
+        UserDAO userDAO = new SqlUserDAO();
+        GameDAO gameDAO = new SqlGameDAO();
+        AuthDAO authDAO = new SqlAuthDAO();
 
         registerService = new RegisterService(userDAO, authDAO);
         clearService = new ClearService(gameDAO, authDAO, userDAO);

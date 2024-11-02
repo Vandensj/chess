@@ -43,12 +43,19 @@ public class SqlUserDAO implements UserDAO {
 
     @Override
     public void clear() throws DataAccessException {
-        String sql = "DELETE FROM user";
+        String sql = "DELETE FROM auth";
         try (Connection connection = DatabaseManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("Error clearing auth table: " + e.getMessage());
+            throw new DataAccessException("Error clearing auth table (before clearing user table): " + e.getMessage());
+        }
+        sql = "DELETE FROM user";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("Error clearing user table: " + e.getMessage());
         }
     }
 
@@ -83,5 +90,22 @@ public class SqlUserDAO implements UserDAO {
             throw new DataAccessException("Error verifying user: " + e.getMessage());
         }
         return false;
+    }
+
+    @Override
+    public String getPassword(String username) throws DataAccessException {
+        String sql = "SELECT password FROM user WHERE username = ?";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, username);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getString("password");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error getting password: " + e.getMessage());
+        }
+        return null;
     }
 }

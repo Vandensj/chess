@@ -37,4 +37,9 @@ public class MemUserDAO implements UserDAO {
     public Boolean verifyUser(String username) throws DataAccessException {
         return users.containsKey(username);
     }
+
+    @Override
+    public String getPassword(String username) throws DataAccessException {
+        return users.get(username).password();
+    }
 }

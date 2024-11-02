@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mindrot.jbcrypt.BCrypt;
 import service.ClearService;
 import service.GameService;
 import service.RegisterService;
@@ -24,9 +25,9 @@ public class UserServiceTests {
 
     @BeforeAll
     public static void init() {
-        userDAO = new MemUserDAO();
-        authDAO = new MemAuthDAO();
-        gameDAO = new MemGameDAO();
+        userDAO = new SqlUserDAO();
+        authDAO = new SqlAuthDAO();
+        gameDAO = new SqlGameDAO();
 
         clearService = new ClearService(gameDAO, authDAO, userDAO);
         registerService = new RegisterService(userDAO, authDAO);
@@ -43,7 +44,7 @@ public class UserServiceTests {
     public void registerSuccess() throws Exception {
         registerService.createUser("Sam", "password", "me@gmail.com");
 
-        Assertions.assertNotNull(userDAO.getUser("Sam", "password"));
+        Assertions.assertTrue(userDAO.verifyUser("Sam"));
     }
 
     @Test
@@ -60,7 +61,7 @@ public class UserServiceTests {
     @Test
     public void loginSuccess() throws Exception {
         registerService.createUser("Sam", "password", "me@gmail.com");
-        Assertions.assertNotNull(userDAO.getUser("Sam", "password"));
+        Assertions.assertTrue(userDAO.verifyUser("Sam"));
         Assertions.assertTrue(authDAO.verifyAuthToken(userService.loginUser("Sam", "password")));
     }
 

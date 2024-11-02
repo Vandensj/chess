@@ -19,13 +19,12 @@ public class UserService {
         if (username == null || password == null || username.isEmpty() || password.isEmpty()) {
             throw new IllegalArgumentException("Username and password are required");
         }
-        UserData userData = userDAO.getUser(username, password);
-        if (userData == null) {
+        if (!userDAO.verifyUser(username)) {
             throw new DataAccessException("No user found");
-        } else if (BCrypt.checkpw(password,userData.password())) {
-            return authDAO.createAuthToken(username);
+        } else if (!BCrypt.checkpw(password, userDAO.getPassword(username))) {
+            throw new DataAccessException("Wrong password");
         }
-        return null;
+        return authDAO.createAuthToken(username);
     }
 
     public void logoutUser(String token) throws DataAccessException {

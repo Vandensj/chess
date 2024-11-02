@@ -40,6 +40,9 @@ public class GameService {
 
     public void joinGame(String authToken, Integer gameID, ChessGame.TeamColor playerColor) throws Exception {
         String username = authDAO.getUsername(authToken);
+        if (gameID == null) {
+            throw new IllegalArgumentException("Invalid gameID");
+        }
         if (!gameDAO.verifyGame(gameID)) {
             throw new IllegalArgumentException("Error: bad request");
         }
