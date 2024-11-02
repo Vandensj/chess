@@ -3,6 +3,7 @@ package service;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.UserDAO;
+import model.UserData;
 
 public class UserService {
     private final UserDAO userDAO;
@@ -17,7 +18,8 @@ public class UserService {
         if (username == null || password == null || username.isEmpty() || password.isEmpty()) {
             throw new IllegalArgumentException("Username and password are required");
         }
-        if (userDAO.getUser(username, password) == null) {
+        UserData userData = new UserData(userDAO.getUser(username, password));
+        if (userData == null) {
             throw new DataAccessException("No user found");
         }
         return authDAO.createAuthToken(username);

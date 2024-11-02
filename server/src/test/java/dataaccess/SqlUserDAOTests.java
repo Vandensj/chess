@@ -6,7 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class SqlDOATests {
+public class SqlUserDAOTests {
     private AuthDAO authDAO;
     private UserDAO userDAO;
     private Connection connection;
