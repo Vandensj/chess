@@ -20,10 +20,14 @@ public class SqlGameDAO implements GameDAO {
         } catch (SQLException e) {
             throw new DataAccessException("Error clearing game: " + e.getMessage());
         }
+        id = 0;
     }
 
     @Override
     public Integer createGame(String gameName) throws DataAccessException {
+        if (gameName == null || gameName.isEmpty()) {
+            throw new DataAccessException("Error creating game with null or empty gameName");
+        }
         id++;
         String sql = "INSERT INTO game(gameId, gameName, chessGame) VALUES (?, ?, ?)";
         try (Connection connection = DatabaseManager.getConnection();
@@ -41,7 +45,7 @@ public class SqlGameDAO implements GameDAO {
 
     @Override
     public GameData getGame(Integer gameID) throws DataAccessException {
-        String sql = "SELECT gameId, gameName, whiteUsername, blackUsername, chessGame FROM chess_game WHERE gameId = ?";
+        String sql = "SELECT gameId, gameName, whiteUsername, blackUsername, chessGame FROM game WHERE gameId = ?";
         try (Connection connection = DatabaseManager.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, gameID);
@@ -87,9 +91,9 @@ public class SqlGameDAO implements GameDAO {
             throws DataAccessException {
         String sql;
         if (playerColor == ChessGame.TeamColor.BLACK) {
-            sql = "UPDATE chess_game SET blackUsername = ? WHERE gameId = ?";
+            sql = "UPDATE game SET blackUsername = ? WHERE gameId = ?";
         } else {
-            sql = "UPDATE chess_game SET whiteUsername = ? WHERE gameId = ?";
+            sql = "UPDATE game SET whiteUsername = ? WHERE gameId = ?";
         }
         try (Connection connection = DatabaseManager.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
