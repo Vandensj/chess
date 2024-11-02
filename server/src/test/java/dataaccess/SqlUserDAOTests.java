@@ -11,6 +11,11 @@ public class SqlUserDAOTests {
 
     private UserDAO userDAO;
 
+    @BeforeAll
+    static void createTables() throws DataAccessException {
+        DatabaseManager.createTables();
+    }
+
     @BeforeEach
     void setUp() throws SQLException, DataAccessException {
         userDAO = new SqlUserDAO();
