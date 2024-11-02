@@ -20,7 +20,7 @@ public class SqlAuthDAO implements AuthDAO {
 
     @Override
     public String getUsername(String authToken) throws DataAccessException {
-        String sql = "SELECT username FROM auth WHERE auth_token = ?";
+        String sql = "SELECT username FROM auth WHERE authToken = ?";
         try (Connection connection = DatabaseManager.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, authToken);
@@ -37,7 +37,7 @@ public class SqlAuthDAO implements AuthDAO {
 
     @Override
     public String createAuthToken(String username) throws DataAccessException {
-        String sql = "INSERT INTO auth (username, auth_token) VALUES (?, ?)";
+        String sql = "INSERT INTO auth (username, authToken) VALUES (?, ?)";
         try (Connection connection = DatabaseManager.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             String authToken = UUID.randomUUID().toString();
@@ -45,15 +45,15 @@ public class SqlAuthDAO implements AuthDAO {
             preparedStatement.setString(2, authToken);
 
             preparedStatement.executeUpdate();
+            return authToken;
         } catch (SQLException e) {
             throw new DataAccessException("Error creating auth token: " + e.getMessage());
         }
-        return null;
     }
 
     @Override
     public void deleteAuthToken(String authToken) throws DataAccessException {
-        String sql = "DELETE FROM auth WHERE auth_token = ?";
+        String sql = "DELETE FROM auth WHERE authToken = ?";
         try (Connection connection = DatabaseManager.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, authToken);
@@ -81,7 +81,7 @@ public class SqlAuthDAO implements AuthDAO {
 
     @Override
     public Boolean verifyAuthToken(String authToken) throws DataAccessException {
-        String sql = "SELECT 1 FROM auth WHERE auth_token = ? LIMIT 1";
+        String sql = "SELECT 1 FROM auth WHERE authToken = ? LIMIT 1";
         try (Connection connection = DatabaseManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, authToken);
