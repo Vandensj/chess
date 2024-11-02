@@ -40,7 +40,7 @@ public class SqlAuthDAOTests {
     }
 
     @Test
-    void testClear_Success() throws DataAccessException {
+    void testClearSuccess() throws DataAccessException {
         authDAO.createAuthToken("testUser");
         assertEquals(1, authDAO.getSize());
         authDAO.clear();
@@ -48,25 +48,25 @@ public class SqlAuthDAOTests {
     }
 
     @Test
-    void testGetUsername_Success() throws DataAccessException {
+    void testGetUsernameSuccess() throws DataAccessException {
         String authToken = authDAO.createAuthToken("testUser");
         assertEquals("testUser", authDAO.getUsername(authToken));
     }
 
     @Test
-    void testGetUsername_Failure() throws DataAccessException {
+    void testGetUsernameFailure() throws DataAccessException {
         assertNull(authDAO.getUsername("nonexistent_token"));
     }
 
     @Test
-    void testCreateAuthToken_Success() throws DataAccessException {
+    void testCreateAuthTokenSuccess() throws DataAccessException {
         String authToken = authDAO.createAuthToken("testUser");
         assertNotNull(authToken);
         assertEquals("testUser", authDAO.getUsername(authToken));
     }
 
     @Test
-    void testCreateAuthToken_Failure() {
+    void testCreateAuthTokenFailure() {
         assertThrows(DataAccessException.class, () -> {
             String token = new SqlAuthDAO().createAuthToken("");
             assertNull(token);
@@ -74,7 +74,7 @@ public class SqlAuthDAOTests {
     }
 
     @Test
-    void testDeleteAuthToken_Success() throws DataAccessException {
+    void testDeleteAuthTokenSuccess() throws DataAccessException {
         String authToken = authDAO.createAuthToken("testUser");
         assertEquals("testUser", authDAO.getUsername(authToken));
         authDAO.deleteAuthToken(authToken);
@@ -82,7 +82,7 @@ public class SqlAuthDAOTests {
     }
 
     @Test
-    void testDeleteAuthToken_Failure() throws DataAccessException, SQLException {
+    void testDeleteAuthTokenFailure() throws DataAccessException, SQLException {
         String sql = "DROP TABLE auth";
         try (Connection connection = DatabaseManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -95,14 +95,14 @@ public class SqlAuthDAOTests {
     }
 
     @Test
-    void testGetSize_Success() throws DataAccessException {
+    void testGetSizeSuccess() throws DataAccessException {
         authDAO.createAuthToken("testUser");
         authDAO.createAuthToken("testUser2");
         assertEquals(2, authDAO.getSize());
     }
 
     @Test
-    void testGetSize_Failure() throws DataAccessException, SQLException {
+    void testGetSizeFailure() throws DataAccessException, SQLException {
         String sql = "DROP TABLE auth";
         try (Connection connection = DatabaseManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -115,13 +115,13 @@ public class SqlAuthDAOTests {
     }
 
     @Test
-    void testVerifyAuthToken_Success() throws DataAccessException {
+    void testVerifyAuthTokenSuccess() throws DataAccessException {
         String authToken = authDAO.createAuthToken("testUser");
         assertTrue(authDAO.verifyAuthToken(authToken));
     }
 
     @Test
-    void testVerifyAuthToken_Failure() throws DataAccessException {
+    void testVerifyAuthTokenFailure() throws DataAccessException {
         assertFalse(authDAO.verifyAuthToken("invalid_token"));
     }
 }

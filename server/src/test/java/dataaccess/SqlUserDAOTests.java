@@ -29,13 +29,13 @@ public class SqlUserDAOTests {
 
     // Test for creating a user
     @Test
-    void testCreateUser_Success() throws DataAccessException {
+    void testCreateUserSuccess() throws DataAccessException {
         userDAO.createUser("testUser", "password123", "test@example.com");
         assertEquals(1, userDAO.getSize());  // Verify the user count is now 1
     }
 
     @Test
-    void testCreateUser_Fail() throws DataAccessException {
+    void testCreateUserFail() throws DataAccessException {
         userDAO.createUser("testUser", "password123", "test@example.com");
 
         // Try to create the same user again and check for exception
@@ -46,7 +46,7 @@ public class SqlUserDAOTests {
 
     // Test for getting a user
     @Test
-    void testGetUser_Success() throws DataAccessException {
+    void testGetUserSuccess() throws DataAccessException {
         userDAO.createUser("testUser", "password123", "test@example.com");
         UserData userData = userDAO.getUser("testUser", "password123");
         assertNotNull(userData);
@@ -55,7 +55,7 @@ public class SqlUserDAOTests {
     }
 
     @Test
-    void testGetUser_Fail() throws DataAccessException {
+    void testGetUserFail() throws DataAccessException {
         userDAO.createUser("testUser", "password123", "test@example.com");
         UserData userData = userDAO.getUser("testUser", "wrongPassword");
         assertNull(userData);  // Should return null for wrong password
@@ -63,33 +63,33 @@ public class SqlUserDAOTests {
 
     // Test for getting size of users
     @Test
-    void testGetSize_Success() throws DataAccessException {
+    void testGetSizeSuccess() throws DataAccessException {
         assertEquals(0, userDAO.getSize());  // Initially, size should be 0
         userDAO.createUser("testUser", "password123", "test@example.com");
         assertEquals(1, userDAO.getSize());  // After adding a user, size should be 1
     }
 
     @Test
-    void testGetSize_Fail() throws DataAccessException {
+    void testGetSizeFail() throws DataAccessException {
         userDAO.clear();  // Ensure the table is empty
         assertEquals(0, userDAO.getSize());  // Should still return 0
     }
 
     // Test for verifying a user
     @Test
-    void testVerifyUser_Success() throws DataAccessException {
+    void testVerifyUserSuccess() throws DataAccessException {
         userDAO.createUser("testUser", "password123", "test@example.com");
         assertTrue(userDAO.verifyUser("testUser"));  // Should return true for existing user
     }
 
     @Test
-    void testVerifyUser_Fail() throws DataAccessException {
+    void testVerifyUserFail() throws DataAccessException {
         assertFalse(userDAO.verifyUser("nonExistentUser"));  // Should return false for non-existing user
     }
 
     // Test for clearing users
     @Test
-    void testClear_Success() throws DataAccessException {
+    void testClearSuccess() throws DataAccessException {
         userDAO.createUser("testUser1", "password123", "test1@example.com");
         userDAO.createUser("testUser2", "password456", "test2@example.com");
 
