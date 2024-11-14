@@ -7,9 +7,15 @@ import java.net.http.WebSocket;
 public class Client {
     private WebSocket webSocket;
     private ServerFacade serverFacade;
+    private String port;
 
-    public Client(String port) {
+    public Client(String serverPort) {
+        port = serverPort;
         serverFacade = new ServerFacade(port);
+    }
+
+    public String getPort() {
+        return port;
     }
 
     public void connectWebSocket(String webSocketUri) {

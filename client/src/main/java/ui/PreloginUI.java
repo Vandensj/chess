@@ -1,6 +1,7 @@
 package ui;
 
-import ui.Client;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.util.Scanner;
 
@@ -8,13 +9,13 @@ public class PreloginUI {
 
     private Client client;
     private Scanner scanner;
+    private String authToken;
 
     public PreloginUI(Client client) {
         this.client = client;
         this.scanner = new Scanner(System.in);
     }
 
-    // Main loop for handling user input
     public void start() {
         System.out.println("Welcome! Type 'help' for a list of commands.");
 
@@ -60,14 +61,16 @@ public class PreloginUI {
         try {
             String response = client.getServerFacade().login(username, password);
 
-            if (response.contains("success")) {  // Adjust based on actual success response
+            if (response.contains("authToken")) {
                 System.out.println("Login successful!");
+                JsonObject jsonObject = JsonParser.parseString(response).getAsJsonObject();
+                authToken = jsonObject.get("authToken").getAsString();
 
                 // Connect WebSocket for real-time communication after login
-                client.connectWebSocket("ws://localhost:" + client.getServerFacade().getPort() + "/ws");
+                client.connectWebSocket("ws://localhost:" + client.getPort() + "/ws");
 
                 // Transition to the post-login UI
-                new PostloginUI(client).start();
+                new PostloginUI(client, authToken).start();
             } else {
                 System.out.println("Login failed. Please check your username and password.");
             }
@@ -81,18 +84,22 @@ public class PreloginUI {
         String username = scanner.nextLine();
         System.out.print("Enter new password: ");
         String password = scanner.nextLine();
+        System.out.print("Enter new email: ");
+        String email = scanner.nextLine();
 
         try {
-            String response = client.getServerFacade().sendRegisterRequest(username, password);
+            String response = client.getServerFacade().registerUser(username, password, email);
 
-            if (response.contains("success")) {  // Adjust based on actual success response
+            if (response.contains("authToken")) {
                 System.out.println("Registration successful!");
+                JsonObject jsonObject = JsonParser.parseString(response).getAsJsonObject();
+                authToken = jsonObject.get("authToken").getAsString();
 
                 // Connect WebSocket for real-time communication after registration
-                client.connectWebSocket("ws://localhost:" + client.getServerFacade().getPort() + "/ws");
+                client.connectWebSocket("ws://localhost:" + client.getPort() + "/ws");
 
                 // Transition to the post-login UI
-                new PostloginUI(client).start();
+                new PostloginUI(client, authToken).start();
             } else {
                 System.out.println("Registration failed. Username might already be taken.");
             }
