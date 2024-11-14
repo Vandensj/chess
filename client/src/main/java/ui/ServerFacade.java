@@ -1,5 +1,7 @@
 package ui;
 
+import chess.ChessGame;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -13,8 +15,10 @@ public class ServerFacade {
         this.BASE_URL = "http://localhost:" + port + "/";
     }
 
-    public String joinGame(String gameID, String playerColor, String authToken) throws Exception {
-        
+    public String joinGame(String gameID, ChessGame.TeamColor playerColor, String authToken) throws Exception {
+        String uri = BASE_URL + "game";
+        String json = "{\"playerColor\":\"" + playerColor.toString() + "\",\"gameID\":\"" + gameID + "\"}";
+        return sendGameRequest(uri, authToken, json);
     }
 
     public String createGame(String gameName, String authToken) throws Exception{
