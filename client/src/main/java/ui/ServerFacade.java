@@ -7,7 +7,46 @@ import java.net.http.HttpResponse;
 
 public class ServerFacade {
 
-    public static String sendPostRequest(String url, String json) throws Exception {
+    private String BASE_URL;
+
+    ServerFacade(String port) {
+        this.BASE_URL = "http://localhost:" + port + "/";
+    }
+
+    public String joinGame(String gameID, String playerColor, String authToken) throws Exception {
+        
+    }
+
+    public String createGame(String gameName, String authToken) throws Exception{
+        String uri = BASE_URL + "game";
+        String json = "{\"gameName\":\"" + gameName + "\"}";
+        return sendGameRequest(uri, authToken, json);
+    }
+
+    public String listGames(String authToken) throws Exception {
+        String uri = BASE_URL + "game";
+        return sendGetRequest(uri, authToken);
+    }
+
+    public String logout(String authToken) throws Exception {
+        String uri = BASE_URL + "session";
+        return sendDeleteRequest(uri, authToken);
+    }
+
+    public String registerUser(String username, String password, String email) throws Exception {
+        String uri = BASE_URL + "user";
+        String json = "{\"username\":\"" + username + "\",\"password\":\"" + password +
+                "\",\"email\":\"" + email + "\"}";
+        return sendPostRequest(uri, json);
+    }
+
+    public String login(String username, String password) throws Exception {
+        String url = this.BASE_URL + "session";
+        String json = "{\"username\":\"" + username + "\",\"password\":\"" + password + "\"}";
+        return sendPostRequest(url, json);
+    }
+
+    private String sendPostRequest(String url, String json) throws Exception {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(url))
@@ -18,7 +57,7 @@ public class ServerFacade {
         return response.body();
     }
 
-    public static String sendGameRequest(String url, String authToken, String json) throws Exception {
+    private String sendGameRequest(String url, String authToken, String json) throws Exception {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(url))
@@ -30,17 +69,18 @@ public class ServerFacade {
         return response.body();
     }
 
-    public static String sendGetRequest(String url) throws Exception {
+    private String sendGetRequest(String url, String authToken) throws Exception {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .header("Content-Type", "application/json")
                 .uri(new URI(url))
+                .header("Authorization", authToken)
                 .build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         return response.body();
     }
 
-    public static String sendDeleteRequest(String url, String authToken) throws Exception {
+    private String sendDeleteRequest(String url, String authToken) throws Exception {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(url))
@@ -51,7 +91,7 @@ public class ServerFacade {
         return response.body();
     }
 
-    public static String sendPutRequest(String url, String authToken, String json) throws Exception {
+    private String sendPutRequest(String url, String authToken, String json) throws Exception {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(url))
