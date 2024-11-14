@@ -59,6 +59,8 @@ public class ServerFacade {
                 .header("Authorization", authToken)
                 .PUT(HttpRequest.BodyPublishers.ofString(json))
                 .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        return response.body();
     }
 
 }
