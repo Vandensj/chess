@@ -19,6 +19,10 @@ public class Client {
                 .join();
     }
 
+    public ServerFacade getServerFacade() {
+        return serverFacade;
+    }
+
     private static class WebSocketListener implements WebSocket.Listener {
 
         @Override
