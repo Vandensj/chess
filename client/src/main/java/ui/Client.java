@@ -5,9 +5,10 @@ import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 
 public class Client {
+
     private WebSocket webSocket;
-    private ServerFacade serverFacade;
-    private String port;
+    private final ServerFacade serverFacade;
+    private final String port;
 
     public Client(String serverPort) {
         port = serverPort;
@@ -19,10 +20,10 @@ public class Client {
     }
 
     public void connectWebSocket(String webSocketUri) {
-        HttpClient client = HttpClient.newHttpClient();
-        this.webSocket = client.newWebSocketBuilder()
-                .buildAsync(URI.create(webSocketUri), new WebSocketListener())
-                .join();
+//        HttpClient client = HttpClient.newHttpClient();
+//        this.webSocket = client.newWebSocketBuilder()
+//                .buildAsync(URI.create(webSocketUri), new WebSocketListener())
+//                .join();
     }
 
     public ServerFacade getServerFacade() {

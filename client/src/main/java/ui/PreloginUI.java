@@ -7,8 +7,8 @@ import java.util.Scanner;
 
 public class PreloginUI {
 
-    private Client client;
-    private Scanner scanner;
+    private final Client client;
+    private final Scanner scanner;
     private String authToken;
 
     public PreloginUI(Client client) {
@@ -20,7 +20,7 @@ public class PreloginUI {
         System.out.println("Welcome! Type 'help' for a list of commands.");
 
         while (true) {
-            System.out.print("> ");
+            System.out.print("[LOGGED_OUT] >>> ");
             String command = scanner.nextLine().trim().toLowerCase();
 
             switch (command) {

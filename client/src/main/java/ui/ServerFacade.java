@@ -15,10 +15,10 @@ public class ServerFacade {
         this.BASE_URL = "http://localhost:" + port + "/";
     }
 
-    public String joinGame(String gameID, ChessGame.TeamColor playerColor, String authToken) throws Exception {
+    public String playGame(String gameID, ChessGame.TeamColor playerColor, String authToken) throws Exception {
         String uri = BASE_URL + "game";
         String json = "{\"playerColor\":\"" + playerColor.toString() + "\",\"gameID\":\"" + gameID + "\"}";
-        return sendGameRequest(uri, authToken, json);
+        return sendPutRequest(uri, authToken, json);
     }
 
     public String createGame(String gameName, String authToken) throws Exception{

@@ -1,17 +1,22 @@
 package ui;
 
 import chess.ChessGame;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class PostloginUI {
 
-    private Client client;
-    private Scanner scanner;
-    private Map<Integer, String> gameList; // Maps displayed game numbers to game IDs for easy access
-    private String authToken;
+    private final Client client;
+    private final Scanner scanner;
+    private final Map<Integer, String> gameList; // Maps displayed game numbers to game IDs for easy access
+    private final String authToken;
 
     public PostloginUI(Client client, String token) {
         this.client = client;
@@ -25,7 +30,7 @@ public class PostloginUI {
         System.out.println("You are logged in! Type 'help' for a list of commands.");
 
         while (true) {
-            System.out.print("> ");
+            System.out.print("[LOGGED_IN] >>> ");
             String command = scanner.nextLine().trim().toLowerCase();
 
             switch (command) {
@@ -67,7 +72,7 @@ public class PostloginUI {
     private void handleLogout() {
         try {
             String response = client.getServerFacade().logout(authToken);
-            if (response.contains("success")) {  // Adjust based on actual response from server
+            if (response.isEmpty()) {
                 System.out.println("Logout successful. Returning to login screen.");
                 new PreloginUI(client).start();
             } else {
@@ -84,8 +89,9 @@ public class PostloginUI {
 
         try {
             String response = client.getServerFacade().createGame(gameName, authToken);
-            if (response.contains("success")) {  // Adjust based on actual response
-                System.out.println("Game created successfully with name: " + gameName);
+            if (response.contains("gameID")) {
+                JsonObject jsonObject = JsonParser.parseString(response).getAsJsonObject();
+                System.out.println("Game created successfully with ID: " + jsonObject.get("gameID").getAsInt());
             } else {
                 System.out.println("Failed to create game. Please try again.");
             }
@@ -100,23 +106,24 @@ public class PostloginUI {
             if (response.contains("games")) {  // Assuming response structure contains games
                 System.out.println("Available games:");
 
+                Gson gson = new Gson();
+                JsonObject jsonObject = gson.fromJson(response, JsonObject.class);
+
+                JsonArray gamesArray = jsonObject.getAsJsonArray("games");
+
                 // Reset game list map
                 gameList.clear();
 
-                // Parse and display games (pseudo-parsing shown here)
-                // Format should be adjusted based on actual server response
-                // Assuming response is JSON or a structured string containing game names and player info
-                String[] games = response.split(","); // Simplify for example, parse JSON or similar structure
-                int count = 1;
-                for (String gameInfo : games) {
-                    // Extracting game ID and details here (simplified)
-                    String gameId = "parsedGameId"; // Parse actual game ID from response
-                    String gameName = "parsedGameName"; // Parse actual game name
-                    String players = "parsedPlayers"; // Parse actual player info
+                for (int i = 0; i < gamesArray.size(); i++) {
+                    JsonObject game = gamesArray.get(i).getAsJsonObject();
 
-                    System.out.println(count + ". " + gameName + " - Players: " + players);
-                    gameList.put(count, gameId);
-                    count++;
+                    // Extract and print game properties
+                    int gameID = game.get("gameID").getAsInt();
+                    String gameName = game.get("gameName").getAsString();
+
+                    gameList.put(gameID, gameName);
+
+                    System.out.println("Game ID: " + gameID + ", Game Name: " + gameName);
                 }
             } else {
                 System.out.println("No games currently available.");
@@ -127,26 +134,25 @@ public class PostloginUI {
     }
 
     private void handlePlayGame() {
-        System.out.print("Enter the number of the game you want to join: ");
-        int gameNumber = Integer.parseInt(scanner.nextLine());
+        System.out.print("Enter the ID of the game you want to join: ");
+        int gameId = Integer.parseInt(scanner.nextLine());
 
-        if (!gameList.containsKey(gameNumber)) {
+        if (!gameList.containsKey(gameId)) {
             System.out.println("Invalid game number. Please list games and try again.");
             return;
         }
 
         System.out.print("Enter your color (e.g., 'white' or 'black'): ");
-        ChessGame.TeamColor color = (scanner.nextLine() == "white") ? ChessGame.TeamColor.WHITE :
+        ChessGame.TeamColor color = (Objects.equals(scanner.nextLine(), "white")) ? ChessGame.TeamColor.WHITE :
                 ChessGame.TeamColor.BLACK;
 
-        String gameId = gameList.get(gameNumber);
         try {
-            String response = client.getServerFacade().joinGame(gameId,color, authToken);
-            if (response.contains("success")) {  // Adjust based on actual server response
+            String response = client.getServerFacade().playGame(String.valueOf(gameId), color, authToken);
+            if (response.isEmpty()) {  // Adjust based on actual server response
                 System.out.println("Joined game successfully.");
 
                 // Transition to GameUI for gameplay
-                new GameUI(client, gameId, color).start();
+                new GameUI(client, gameId, color, authToken).start();
             } else {
                 System.out.println("Failed to join game. Please try another.");
             }
