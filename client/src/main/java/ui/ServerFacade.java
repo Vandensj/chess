@@ -11,7 +11,7 @@ public class ServerFacade {
 
     private String BASE_URL;
 
-    ServerFacade(String port) {
+     public ServerFacade(String port) {
         this.BASE_URL = "http://localhost:" + port + "/";
     }
 
