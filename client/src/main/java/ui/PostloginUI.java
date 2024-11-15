@@ -29,6 +29,12 @@ public class PostloginUI {
     public void start() {
         System.out.println("You are logged in! Type 'help' for a list of commands.");
 
+        try {
+            updateGames();
+        } catch (Exception e) {
+            System.out.println("Error getting games from server: " + e.getMessage());
+        }
+
         while (true) {
             System.out.print("[LOGGED_IN] >>> ");
             String command = scanner.nextLine().trim().toLowerCase();
@@ -56,6 +62,26 @@ public class PostloginUI {
                     System.out.println("Unknown command. Type 'help' for available commands.");
                     break;
             }
+        }
+    }
+
+    private void updateGames() throws Exception {
+        Gson gson = new Gson();
+        JsonObject jsonObject = gson.fromJson(client.getServerFacade().listGames(authToken), JsonObject.class);
+
+        JsonArray gamesArray = jsonObject.getAsJsonArray("games");
+
+        // Reset game list map
+        gameList.clear();
+
+        for (int i = 0; i < gamesArray.size(); i++) {
+            JsonObject game = gamesArray.get(i).getAsJsonObject();
+
+            // Extract and print game properties
+            int gameID = game.get("gameID").getAsInt();
+            String gameName = game.get("gameName").getAsString();
+
+            gameList.put(gameID, gameName);
         }
     }
 
@@ -97,6 +123,11 @@ public class PostloginUI {
             }
         } catch (Exception e) {
             System.out.println("An error occurred while creating the game: " + e.getMessage());
+        }
+        try {
+            updateGames();
+        } catch (Exception e) {
+            System.out.println("Error getting games from server: " + e.getMessage());
         }
     }
 
@@ -187,7 +218,7 @@ public class PostloginUI {
 
     private static void printChessBoard(boolean whiteOnTop) {
         // Column labels (a-h) for the board
-        String columnLabels = "   a  b  c  d  e  f  g  h";
+        String columnLabels = "   a   b  c   d   e  f   g   h";
 
         // Print the column labels at the top
         System.out.println(EscapeSequences.ERASE_SCREEN);
@@ -203,7 +234,7 @@ public class PostloginUI {
             // Print row label on the left side
             System.out.print(row + " ");
 
-            // Loop through each column based on whiteOnTop preference
+            // Loop through each column
             for (char col = 'a'; col <= 'h'; col++) {
                 String piece = getInitialPiece(row, col);
                 String backgroundColor = (row + col) % 2 == 0 ? EscapeSequences.SET_BG_COLOR_LIGHT_GREY : EscapeSequences.SET_BG_COLOR_DARK_GREY;
@@ -212,7 +243,7 @@ public class PostloginUI {
                 System.out.print(backgroundColor + piece + EscapeSequences.RESET_BG_COLOR);
             }
 
-            // Print row label on the right side and reset line color
+            // Print row label on the right side
             System.out.print(" " + row);
             System.out.println(EscapeSequences.RESET_TEXT_COLOR);
         }

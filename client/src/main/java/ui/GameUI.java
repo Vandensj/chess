@@ -9,8 +9,8 @@ public class GameUI {
     private final ChessGame.TeamColor color;
     private final String authToken;
 
-    public GameUI(Client WSClient, int gameId, ChessGame.TeamColor teamColor, String token) {
-        this.client = WSClient;
+    public GameUI(Client wsClient, int gameId, ChessGame.TeamColor teamColor, String token) {
+        this.client = wsClient;
         this.gameId = gameId;
         this.color = teamColor;
         this.authToken = token;

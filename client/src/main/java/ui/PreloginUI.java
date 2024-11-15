@@ -66,9 +66,6 @@ public class PreloginUI {
                 JsonObject jsonObject = JsonParser.parseString(response).getAsJsonObject();
                 authToken = jsonObject.get("authToken").getAsString();
 
-                // Connect WebSocket for real-time communication after login
-                client.connectWebSocket("ws://localhost:" + client.getPort() + "/ws");
-
                 // Transition to the post-login UI
                 new PostloginUI(client, authToken).start();
             } else {
@@ -94,9 +91,6 @@ public class PreloginUI {
                 System.out.println("Registration successful!");
                 JsonObject jsonObject = JsonParser.parseString(response).getAsJsonObject();
                 authToken = jsonObject.get("authToken").getAsString();
-
-                // Connect WebSocket for real-time communication after registration
-                client.connectWebSocket("ws://localhost:" + client.getPort() + "/ws");
 
                 // Transition to the post-login UI
                 new PostloginUI(client, authToken).start();

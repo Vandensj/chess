@@ -19,35 +19,7 @@ public class Client {
         return port;
     }
 
-    public void connectWebSocket(String webSocketUri) {
-//        HttpClient client = HttpClient.newHttpClient();
-//        this.webSocket = client.newWebSocketBuilder()
-//                .buildAsync(URI.create(webSocketUri), new WebSocketListener())
-//                .join();
-    }
-
     public ServerFacade getServerFacade() {
         return serverFacade;
-    }
-
-    private static class WebSocketListener implements WebSocket.Listener {
-
-        @Override
-        public void onOpen(WebSocket webSocket) {
-            System.out.println("Connected to WebSocket server.");
-            WebSocket.Listener.super.onOpen(webSocket);
-        }
-
-        @Override
-        public void onError(WebSocket webSocket, Throwable error) {
-            System.err.println("WebSocket error: " + error.getMessage());
-        }
-    }
-
-    // Method to send a message to the WebSocket
-    public void sendMessage(String message) {
-        if (webSocket != null) {
-            webSocket.sendText(message, true);
-        }
     }
 }
