@@ -159,7 +159,8 @@ public class PostloginUI {
         } catch (Exception e) {
             System.out.println("An error occurred while joining the game: " + e.getMessage());
         }
-        printBoard();
+        printChessBoard(true);
+        printChessBoard(false);
     }
 
 
@@ -180,59 +181,83 @@ public class PostloginUI {
         } catch (Exception e) {
             System.out.println("An error occurred while attempting to observe the game: " + e.getMessage());
         }
-        printBoard();
+        printChessBoard(true);
+        printChessBoard(false);
     }
 
-    private void printBoard() {
-        String[][] board = {
-                {EscapeSequences.BLACK_ROOK, EscapeSequences.BLACK_KNIGHT, EscapeSequences.BLACK_BISHOP, EscapeSequences.BLACK_QUEEN, EscapeSequences.BLACK_KING, EscapeSequences.BLACK_BISHOP, EscapeSequences.BLACK_KNIGHT, EscapeSequences.BLACK_ROOK},
-                {EscapeSequences.BLACK_PAWN, EscapeSequences.BLACK_PAWN, EscapeSequences.BLACK_PAWN, EscapeSequences.BLACK_PAWN, EscapeSequences.BLACK_PAWN, EscapeSequences.BLACK_PAWN, EscapeSequences.BLACK_PAWN, EscapeSequences.BLACK_PAWN},
-                {EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY},
-                {EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY},
-                {EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY},
-                {EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY},
-                {EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN},
-                {EscapeSequences.WHITE_ROOK, EscapeSequences.WHITE_KNIGHT, EscapeSequences.WHITE_BISHOP, EscapeSequences.WHITE_QUEEN, EscapeSequences.WHITE_KING, EscapeSequences.WHITE_BISHOP, EscapeSequences.WHITE_KNIGHT, EscapeSequences.WHITE_ROOK}
-        };
+    private static void printChessBoard(boolean whiteOnTop) {
+        // Column labels (a-h) for the board
+        String columnLabels = "   a  b  c  d  e  f  g  h";
+
+        // Print the column labels at the top
         System.out.println(EscapeSequences.ERASE_SCREEN);
-        System.out.println("Initial Board State (White on top):");
-        printNormalBoard(board);
+        System.out.println(columnLabels);
 
-        System.out.println("\nInitial Board State (White on bottom):");
-        printFlippedBoard(board);
+        // Determine row order based on whiteOnTop preference
+        int startRow = whiteOnTop ? 8 : 1;
+        int endRow = whiteOnTop ? 1 : 8;
+        int rowStep = whiteOnTop ? -1 : 1;
+
+        // Loop through each row based on whiteOnTop preference
+        for (int row = startRow; row != endRow + rowStep; row += rowStep) {
+            // Print row label on the left side
+            System.out.print(row + " ");
+
+            // Loop through each column based on whiteOnTop preference
+            for (char col = 'a'; col <= 'h'; col++) {
+                String piece = getInitialPiece(row, col);
+                String backgroundColor = (row + col) % 2 == 0 ? EscapeSequences.SET_BG_COLOR_LIGHT_GREY : EscapeSequences.SET_BG_COLOR_DARK_GREY;
+
+                // Print each cell with background color and piece symbol
+                System.out.print(backgroundColor + piece + EscapeSequences.RESET_BG_COLOR);
+            }
+
+            // Print row label on the right side and reset line color
+            System.out.print(" " + row);
+            System.out.println(EscapeSequences.RESET_TEXT_COLOR);
+        }
+
+        // Print the column labels at the bottom
+        System.out.println(columnLabels);
     }
 
-    private void printNormalBoard(String[][] board) {
-        System.out.print(EscapeSequences.SET_BG_COLOR_BLUE + EscapeSequences.EMPTY  + EscapeSequences.RESET_BG_COLOR);
-        for (char col = 'a'; col <= 'h'; col++) {
-            System.out.print(EscapeSequences.SET_BG_COLOR_BLUE + " " + col + " "  + EscapeSequences.RESET_BG_COLOR);
+    // Helper function to get the initial piece placement based on the row and column
+    private static String getInitialPiece(int row, char col) {
+        switch (row) {
+            case 8:
+                return getPieceForRow8(col); // Black major pieces row
+            case 7:
+                return EscapeSequences.BLACK_PAWN; // Black pawns row
+            case 2:
+                return EscapeSequences.WHITE_PAWN; // White pawns row
+            case 1:
+                return getPieceForRow1(col); // White major pieces row
+            default:
+                return EscapeSequences.EMPTY; // Empty squares
         }
-        System.out.print(EscapeSequences.EMPTY +EscapeSequences.RESET_BG_COLOR);
-        System.out.println();
-        for (int i = 0; i < board.length; i++) {
-            System.out.print(EscapeSequences.SET_BG_COLOR_BLUE + " " + i + " " + EscapeSequences.RESET_BG_COLOR);
-            for (int j = 0; j < board[i].length; j++) {
-                String backgroundColor = (i + j) % 2 == 0 ? EscapeSequences.SET_BG_COLOR_LIGHT_GREY : EscapeSequences.SET_BG_COLOR_DARK_GREY;
-                System.out.print(backgroundColor + board[i][j] + EscapeSequences.RESET_BG_COLOR);
-            }
-            System.out.print(EscapeSequences.SET_BG_COLOR_BLUE + " " + i + " " + EscapeSequences.RESET_BG_COLOR);
-            System.out.println();
-        }
-        System.out.print(EscapeSequences.SET_BG_COLOR_BLUE + EscapeSequences.EMPTY  + EscapeSequences.RESET_BG_COLOR);
-        for (char col = 'a'; col <= 'h'; col++) {
-            System.out.print(EscapeSequences.SET_BG_COLOR_BLUE + " " + col + " "  + EscapeSequences.RESET_BG_COLOR);
-        }
-        System.out.print(EscapeSequences.EMPTY +EscapeSequences.RESET_BG_COLOR);
-        System.out.println();
     }
 
-    private void printFlippedBoard(String[][] board) {
-        for (int i = board.length - 1; i >= 0; i--) {
-            for (int j = board[i].length - 1; j >= 0; j--) {
-                String backgroundColor = (i + j) % 2 == 0 ? EscapeSequences.SET_BG_COLOR_LIGHT_GREY : EscapeSequences.SET_BG_COLOR_DARK_GREY;
-                System.out.print(backgroundColor + board[i][j] + EscapeSequences.RESET_BG_COLOR);
-            }
-            System.out.println();
-        }
+    // Returns the black major pieces for row 8 based on column
+    private static String getPieceForRow8(char col) {
+        return switch (col) {
+            case 'a', 'h' -> EscapeSequences.BLACK_ROOK;
+            case 'b', 'g' -> EscapeSequences.BLACK_KNIGHT;
+            case 'c', 'f' -> EscapeSequences.BLACK_BISHOP;
+            case 'd' -> EscapeSequences.BLACK_QUEEN;
+            case 'e' -> EscapeSequences.BLACK_KING;
+            default -> EscapeSequences.EMPTY;
+        };
+    }
+
+    // Returns the white major pieces for row 1 based on column
+    private static String getPieceForRow1(char col) {
+        return switch (col) {
+            case 'a', 'h' -> EscapeSequences.WHITE_ROOK;
+            case 'b', 'g' -> EscapeSequences.WHITE_KNIGHT;
+            case 'c', 'f' -> EscapeSequences.WHITE_BISHOP;
+            case 'd' -> EscapeSequences.WHITE_QUEEN;
+            case 'e' -> EscapeSequences.WHITE_KING;
+            default -> EscapeSequences.EMPTY;
+        };
     }
 }
