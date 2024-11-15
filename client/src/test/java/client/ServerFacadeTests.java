@@ -14,11 +14,12 @@ public class ServerFacadeTests {
 
     private static Server server;
     private ServerFacade serverFacade;
+    private static int port;
 
     @BeforeAll
     public static void init() {
         server = new Server();
-        var port = server.run(8080);
+        port = server.run(0);
         System.out.println("Started test HTTP server on " + port);
     }
 
@@ -30,7 +31,7 @@ public class ServerFacadeTests {
 
     @BeforeEach
     public void setup() throws DataAccessException {
-        serverFacade = new ServerFacade("8080");
+        serverFacade = new ServerFacade(Integer.toString(port));
         server.clear();
     }
 
