@@ -6,20 +6,19 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Scanner;
+import java.util.*;
 
 public class PostloginUI {
 
     private final Client client;
     private final Scanner scanner;
-    private final Map<Integer, String> gameList; // Maps displayed game numbers to game IDs for easy access
+    private final Map<String, Integer> gameList; // Maps displayed game numbers to game IDs for easy access
+    private final List<String> gameNames;
     private final String authToken;
 
     public PostloginUI(Client client, String token) {
         this.client = client;
+        this.gameNames = new ArrayList<>();
         this.scanner = new Scanner(System.in);
         this.gameList = new HashMap<>();
         this.authToken = token;
@@ -73,6 +72,7 @@ public class PostloginUI {
 
         // Reset game list map
         gameList.clear();
+        gameNames.clear();
 
         for (int i = 0; i < gamesArray.size(); i++) {
             JsonObject game = gamesArray.get(i).getAsJsonObject();
@@ -81,7 +81,8 @@ public class PostloginUI {
             int gameID = game.get("gameID").getAsInt();
             String gameName = game.get("gameName").getAsString();
 
-            gameList.put(gameID, gameName);
+            gameList.put(gameName, gameID);
+            gameNames.add(gameName);
         }
     }
 
@@ -144,6 +145,7 @@ public class PostloginUI {
 
                 // Reset game list map
                 gameList.clear();
+                gameNames.clear();
 
                 for (int i = 0; i < gamesArray.size(); i++) {
                     JsonObject game = gamesArray.get(i).getAsJsonObject();
@@ -165,9 +167,10 @@ public class PostloginUI {
                         whiteUser = "none";
                     }
 
-                    gameList.put(gameID, gameName);
+                    gameList.put(gameName, gameID);
+                    gameNames.add(gameName);
 
-                    System.out.println("Game ID: " + gameID + ", Game Name: " + gameName + ", White Username: "
+                    System.out.println("Game Number: " + (i+1) + ", Game Name: " + gameName + ", White Username: "
                             + whiteUser + ", Black Username: " + blackUser);
                 }
             } else {
@@ -179,10 +182,10 @@ public class PostloginUI {
     }
 
     private void handlePlayGame() {
-        System.out.print("Enter the ID of the game you want to join: ");
-        int gameId = Integer.parseInt(scanner.nextLine());
+        System.out.print("Enter the number of the game you want to join: ");
+        int gameNumber = Integer.parseInt(scanner.nextLine());
 
-        if (!gameList.containsKey(gameId)) {
+        if (gameNames.size() < gameNumber || gameNumber < 1) {
             System.out.println("Invalid game number. Please list games and try again.");
             return;
         }
@@ -192,20 +195,20 @@ public class PostloginUI {
                 ChessGame.TeamColor.BLACK;
 
         try {
-            String response = client.getServerFacade().playGame(String.valueOf(gameId), color, authToken);
+            String response = client.getServerFacade().playGame(String.valueOf(gameNumber), color, authToken);
             if (response.isEmpty()) {  // Adjust based on actual server response
                 System.out.println("Joined game successfully.");
 
                 // Transition to GameUI for gameplay
-                new GameUI(client, gameId, color, authToken).start();
+                new GameUI(client, gameList.get(gameNames.get(gameNumber)), color, authToken).start();
+                printChessBoard(true);
+                printChessBoard(false);
             } else {
                 System.out.println("Failed to join game. Please try another.");
             }
         } catch (Exception e) {
             System.out.println("An error occurred while joining the game: " + e.getMessage());
         }
-        printChessBoard(true);
-        printChessBoard(false);
     }
 
 
@@ -213,15 +216,15 @@ public class PostloginUI {
         System.out.print("Enter the number of the game you want to observe: ");
         int gameNumber = Integer.parseInt(scanner.nextLine());
 
-        if (!gameList.containsKey(gameNumber)) {
+        if (!(gameNames.size() < gameNumber - 1)) {
             System.out.println("Invalid game number. Please list games and try again.");
             return;
         }
 
-        String gameId = gameList.get(gameNumber);
+        Integer gameId = gameList.get(gameNames.get(gameNumber - 1));
         try {
             // Placeholder for observe game request
-            System.out.println("Observing game " + gameId + ". Functionality to be implemented in Phase 6.");
+            System.out.println("Observing game " + gameNumber + ". Functionality to be implemented in Phase 6.");
             // Add WebSocket or other real-time observer setup here in future phase
         } catch (Exception e) {
             System.out.println("An error occurred while attempting to observe the game: " + e.getMessage());
