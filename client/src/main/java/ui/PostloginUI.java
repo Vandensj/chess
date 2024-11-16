@@ -118,7 +118,6 @@ public class PostloginUI {
             String response = client.getServerFacade().createGame(gameName, authToken);
             if (response.contains("gameID")) {
                 JsonObject jsonObject = JsonParser.parseString(response).getAsJsonObject();
-                System.out.println("Game created successfully with ID: " + jsonObject.get("gameID").getAsInt());
             } else {
                 System.out.println("Failed to create game. Please try again.");
             }
