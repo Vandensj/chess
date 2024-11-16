@@ -167,7 +167,8 @@ public class PostloginUI {
 
                     gameList.put(gameID, gameName);
 
-                    System.out.println("Game ID: " + gameID + ", Game Name: " + gameName + ", White Username: " + whiteUser + ", Black Username: " + blackUser);
+                    System.out.println("Game ID: " + gameID + ", Game Name: " + gameName + ", White Username: "
+                            + whiteUser + ", Black Username: " + blackUser);
                 }
             } else {
                 System.out.println("No games currently available.");
