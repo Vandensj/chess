@@ -9,7 +9,15 @@ import java.util.List;
 import java.sql.*;
 
 public class SqlGameDAO implements GameDAO {
-    static int id = 0;
+    static int id;
+
+    public SqlGameDAO() {
+        try {
+            id = getSize();
+        } catch (Exception e) {
+            id = 0;
+        }
+    }
 
     @Override
     public void clear() throws DataAccessException {
