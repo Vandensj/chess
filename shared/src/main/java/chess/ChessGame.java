@@ -17,6 +17,8 @@ public class ChessGame {
     private ChessBoard gameBoard;
     private TeamColor turnTeam;
 
+    private boolean gameOver;
+
     // Variables for special moves
     private Boolean blackKingMoved = false;
     private Boolean whiteKingMoved = false;
@@ -30,6 +32,7 @@ public class ChessGame {
         gameBoard = new ChessBoard();
         gameBoard.resetBoard();
         turnTeam = TeamColor.WHITE;
+        gameOver = false;
     }
 
     /**
@@ -297,6 +300,14 @@ public class ChessGame {
             default:
                 break;
         }
+    }
+
+    public Boolean isOver() {
+        return gameOver;
+    }
+
+    public void setGameOver(boolean gameOver) {
+        this.gameOver = gameOver;
     }
 
     /**

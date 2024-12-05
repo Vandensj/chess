@@ -1,5 +1,8 @@
 package server;
 
+import chess.ChessGame;
+import chess.ChessMove;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
@@ -9,15 +12,13 @@ import model.GameData;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
 import javax.websocket.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @WebSocket
 public class WebSocketServer {
@@ -59,13 +60,13 @@ public class WebSocketServer {
                 handleConnect(command, session);
                 break;
             case MAKE_MOVE:
-                handleMakeMove(command);
+                handleMakeMove((MakeMoveCommand) command, session);
                 break;
             case LEAVE:
-                handleLeave(command);
+                handleLeave(command, session);
                 break;
             case RESIGN:
-                handleResign(command);
+                handleResign(command, session);
                 break;
             default:
                 System.out.println("Unknown command type: " + command.getCommandType());
@@ -93,20 +94,74 @@ public class WebSocketServer {
 
         sessions.computeIfAbsent(gameID, k -> new ArrayList<>()).add(session);
 
+        String color = "observer";
+        if (Objects.equals(gameData.whiteUsername(), username)) {
+            color = "white";
+        } else if (Objects.equals(gameData.blackUsername(), username)) {
+            color = "black";
+        }
+
         ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, username +
-                " has joined the game");
+                " has joined the game as " + color);
         broadcastMessage(notification, gameID);
     }
 
-    private void handleMakeMove(UserGameCommand command) {
+    private void handleMakeMove(MakeMoveCommand command, Session session)
+            throws DataAccessException {
         // Validate move, update game, notify players
+        Integer gameID = command.getGameID();
+        String authToken = command.getAuthToken();
+        String username = authDAO.getUsername(authToken);
+        GameData gameData = gameDAO.getGame(gameID);
+        ChessMove move = command.getMove();
+
+        if (username == null) {
+            ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "invalid authToken");
+            sendMessage(msg, session);
+            return;
+        }
+        if (!gameDAO.verifyGame(gameID)) {
+            ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "game not found");
+            sendMessage(msg, session);
+            return;
+        }
+        if (gameData.game().isOver()) {
+            ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "game is over");
+            sendMessage(msg, session);
+            return;
+        }
+        try {
+            ChessGame game = gameData.game();
+            ChessGame.TeamColor color = game.getTeamTurn();
+            ChessGame.TeamColor opponent = (game.getTeamTurn() == ChessGame.TeamColor.WHITE) ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+            game.makeMove(move);
+            ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, color +
+                    " has made a move");
+            broadcastMessage(msg, gameID);
+            if (game.isInCheck(opponent)) {
+                msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, opponent +
+                        " is in check");
+                broadcastMessage(msg, gameID);
+            } else if (game.isInCheckmate(opponent)) {
+                msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, opponent +
+                        " is in checkmate");
+                broadcastMessage(msg, gameID);
+            } else if (game.isInStalemate(opponent)) {
+                msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "game in " +
+                        "stalemate");
+                broadcastMessage(msg, gameID);
+            }
+        } catch (InvalidMoveException e) {
+            ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage());
+            sendMessage(msg, session);
+        }
     }
 
-    private void handleLeave(UserGameCommand command) {
+    private void handleLeave(UserGameCommand command, Session session) {
         // Notify other players and update the game state
     }
 
-    private void handleResign(UserGameCommand command) {
+    private void handleResign(UserGameCommand command, Session session) {
         // End game and notify all connected clients
     }
 
