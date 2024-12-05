@@ -6,6 +6,7 @@ import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.Scanner;
 
 public class GameUI {
@@ -35,7 +36,11 @@ public class GameUI {
         } catch (Exception e) {
             throw new Exception("Error joining web socket server");
         }
-        webSocketClient.teamColor = teamColor;
+        if (teamColor == null) {
+            webSocketClient.teamColor = ChessGame.TeamColor.WHITE;
+        } else {
+            webSocketClient.teamColor = teamColor;
+        }
     }
 
     public void start() {
@@ -177,17 +182,25 @@ public class GameUI {
         chessGame = webSocketClient.getGame();
         System.out.print("Enter the position of the piece to highlight (e.g., e2): ");
         ChessPosition position = parsePosition(scanner.nextLine().trim());
-        BoardPrinter.printHighlightedMoves(chessGame.getBoard(), color, position);
+        if (position == null) {
+            return;
+        }
+        BoardPrinter.printHighlightedMoves(chessGame.getBoard(), color, chessGame.validMoves(position));
     }
 
     private ChessPosition parsePosition(String input) {
         if (input.length() == 2) {
-            int col = input.charAt(0) - 'a';
-            int row = input.charAt(1) - '1';
-            if (col >= 0 && col < 8 && row >= 0 && row < 8) {
+            int col = input.charAt(0) - 'a' + 1;
+            int row = input.charAt(1) - '1' + 1;
+            if (col > 0 && col < 9 && row > 0 && row < 9) {
                 return new ChessPosition(row, col);
+            } else {
+                System.out.println("Position must be in format [a-h][1-8].");
+                return null;
             }
+        } else {
+            System.out.println("Position must be in format [a-h][1-8].");
+            return null;
         }
-        throw new IllegalArgumentException("Position must be in format [a-h][1-8].");
     }
 }
