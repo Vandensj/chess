@@ -43,6 +43,14 @@ public class WebSocketServer {
     public void onMessage(Session session, String message) {
         System.out.println("in onMessage");
         // Deserialize message into UserGameCommand
+        if (message.contains("MAKE_MOVE")) {
+            MakeMoveCommand command = new Gson().fromJson(message, MakeMoveCommand.class);
+            try {
+                handleMakeMove(command, session);
+            } catch (Exception e) {
+                System.out.println("Error: " + e.getMessage());
+            }
+        }
         UserGameCommand command = parseCommand(message);
         try {
             handleCommand(command, session);
@@ -60,9 +68,6 @@ public class WebSocketServer {
         switch (command.getCommandType()) {
             case CONNECT:
                 handleConnect(command, session);
-                break;
-            case MAKE_MOVE:
-                handleMakeMove((MakeMoveCommand) command, session);
                 break;
             case LEAVE:
                 handleLeave(command, session);

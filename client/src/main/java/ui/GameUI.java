@@ -56,7 +56,8 @@ public class GameUI {
                     break;
                 case "redraw":
                     chessGame = webSocketClient.getGame();
-                    BoardPrinter.printBoard(chessGame.getBoard(), color);
+                    ChessGame.TeamColor bottom = (color == null) ? ChessGame.TeamColor.WHITE : color;
+                    BoardPrinter.printBoard(chessGame.getBoard(), bottom);
                     break;
                 case "leave":
                     leaveGame();
@@ -185,7 +186,8 @@ public class GameUI {
         if (position == null) {
             return;
         }
-        BoardPrinter.printHighlightedMoves(chessGame.getBoard(), color, chessGame.validMoves(position));
+        ChessGame.TeamColor bottom = (color == null) ? ChessGame.TeamColor.WHITE : color;
+        BoardPrinter.printHighlightedMoves(chessGame.getBoard(), bottom, chessGame.validMoves(position));
     }
 
     private ChessPosition parsePosition(String input) {
