@@ -2,6 +2,8 @@ package ui;
 
 import chess.ChessGame;
 
+import javax.websocket.ContainerProvider;
+import javax.websocket.WebSocketContainer;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -102,6 +104,8 @@ public class ServerFacade {
 
     public WebSocketClient createWebSocketClient() throws Exception {
         String uri = baseUrl + "ws";
-        return new WebSocketClient(uri);
+        uri = uri.replaceFirst("http", "ws");
+        WebSocketClient webSocketClient = new WebSocketClient(uri);
+        return webSocketClient;
     }
 }

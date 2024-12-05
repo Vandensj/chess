@@ -41,25 +41,17 @@ public class WebSocketClient {
     public void onMessage(String message) {
         System.out.println("Received: " + message);
 
-        // Deserialize the message into a ServerMessage object
-        ServerMessage serverMessage = gson.fromJson(message, ServerMessage.class);
-
-        // Handle the message based on its type
-        switch (serverMessage.getServerMessageType()) {
-            case LOAD_GAME:
-                LoadGameMessage gameMessage = (LoadGameMessage) serverMessage;
-                handleLoadGame(gameMessage.getGame());
-                break;
-            case ERROR:
-                ErrorMessage errorMessage = (ErrorMessage) serverMessage;
-                handleError(errorMessage.getErrorMessage());
-                break;
-            case NOTIFICATION:
-                NotificationMessage notificationMessage = (NotificationMessage) serverMessage;
-                handleNotification(notificationMessage.getMessage());
-                break;
-            default:
-                System.err.println("Unknown server message type.");
+        if (message.contains("LOAD_GAME")) {
+            LoadGameMessage msg = gson.fromJson(message, LoadGameMessage.class);
+            handleLoadGame(msg.getGame());
+        } else if (message.contains("NOTIFICATION")) {
+            NotificationMessage msg = gson.fromJson(message, NotificationMessage.class);
+            handleNotification(msg.getMessage());
+        } else if (message.contains("ERROR")) {
+            ErrorMessage msg = gson.fromJson(message, ErrorMessage.class);
+            handleError(msg.getErrorMessage());
+        } else {
+            System.err.println("Unknown server message type.");
         }
     }
 
