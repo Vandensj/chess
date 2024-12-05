@@ -1,7 +1,10 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 import com.google.gson.Gson;
+import websocket.commands.UserGameCommand;
 import websocket.messages.UserGameCommand;
 
 import java.io.PrintWriter;
@@ -15,6 +18,7 @@ public class GameUI {
     private final String authToken;
     private final ChessGame.TeamColor color;
     private WebSocketClient webSocketClient;
+    private ChessGame chessGame;
 
     public GameUI(Client client, Integer gameID, ChessGame.TeamColor teamColor, String authToken) throws Exception {
         this.client = client;
@@ -26,6 +30,12 @@ public class GameUI {
             this.webSocketClient = client.getServerFacade().createWebSocketClient();
         } catch (Exception e) {
             throw new Exception("Error creating web socket client");
+        }
+        try {
+            UserGameCommand joinCommand = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
+            webSocketClient.sendMessage(joinCommand);
+        } catch (Exception e) {
+            throw new Exception("Error joining web socket server");
         }
     }
 
@@ -47,9 +57,17 @@ public class GameUI {
                     leaveGame();
                     return; // Exit the game UI
                 case "move":
+                    if (color == null) {
+                        System.out.println("Invalid command for observer");
+                        break;
+                    }
                     makeMove();
                     break;
                 case "resign":
+                    if (color == null) {
+                        System.out.println("Invalid command for observer");
+                        break;
+                    }
                     resignGame();
                     break;
                 case "highlight":
@@ -67,8 +85,10 @@ public class GameUI {
         System.out.println("help       - Displays this help message.");
         System.out.println("redraw     - Redraws the chess board.");
         System.out.println("leave      - Leaves the game and returns to the main menu.");
-        System.out.println("move       - Makes a move in the game.");
-        System.out.println("resign     - Resigns from the game.");
+        if (color != null) {
+            System.out.println("move       - Makes a move in the game.");
+            System.out.println("resign     - Resigns from the game.");
+        }
         System.out.println("highlight  - Highlights legal moves for a selected piece.");
     }
 
@@ -127,12 +147,12 @@ public class GameUI {
         return new ChessMove(parsePosition(start), parsePosition(end));
     }
 
-    private Position parsePosition(String input) {
+    private ChessPosition parsePosition(String input) {
         if (input.length() == 2) {
             int col = input.charAt(0) - 'a';
             int row = input.charAt(1) - '1';
             if (col >= 0 && col < 8 && row >= 0 && row < 8) {
-                return new Position(row, col);
+                return new ChessPosition(row, col);
             }
         }
         throw new IllegalArgumentException("Position must be in format [a-h][1-8].");

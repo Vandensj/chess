@@ -1,6 +1,9 @@
 package ui;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
+import websocket.commands.MakeMoveCommand;
+import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
@@ -13,6 +16,7 @@ import java.net.URI;
 public class WebSocketClient {
     private Session session;
     private final Gson gson = new Gson();
+    private ChessGame game;
 
     // Constructor: Connects to the server
     public WebSocketClient(String serverUri) {
@@ -71,10 +75,11 @@ public class WebSocketClient {
     }
 
     // Send a message to the server
-    public void sendMessage(String message) {
+    public void sendMessage(UserGameCommand command) {
         try {
             if (session != null && session.isOpen()) {
-                session.getBasicRemote().sendText(message);
+                String json = gson.toJson(command);
+                session.getBasicRemote().sendText(json);
             } else {
                 System.err.println("Cannot send message: WebSocket session is closed.");
             }
@@ -95,10 +100,9 @@ public class WebSocketClient {
     }
 
     // Handle LOAD_GAME messages
-    private void handleLoadGame(Object game) {
-        System.out.println("Game state received: " + game);
-        // Trigger the board redraw logic
-        redrawBoard(game);
+    private void handleLoadGame(ChessGame game) {
+        this.game = game;
+        drawBoard(game.getBoard());
     }
 
     // Handle ERROR messages
@@ -113,9 +117,7 @@ public class WebSocketClient {
         // Display the notification in the UI or console
     }
 
-    // Dummy method to simulate board redraw logic
-    private void redrawBoard(Object game) {
-        // Replace this with actual board rendering logic
-        System.out.println("Redrawing chess board with new game state...");
+    public ChessGame getGame() {
+        return game;
     }
 }
