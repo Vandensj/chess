@@ -58,6 +58,11 @@ public class MemGameDAO implements GameDAO {
         }
     }
 
+    @Override
+    public void updateChessGame(ChessGame game, Integer gameID) throws DataAccessException {
+        return;
+    }
+
     public Boolean verifyGame(Integer gameID) throws DataAccessException {
         return games.get(gameID) != null;
     }

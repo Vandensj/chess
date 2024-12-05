@@ -9,10 +9,8 @@ import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import dataaccess.UserDAO;
 import model.GameData;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
-import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.annotations.*;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
@@ -20,7 +18,6 @@ import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
-import javax.websocket.*;
 import java.io.IOException;
 import java.util.*;
 
@@ -39,11 +36,12 @@ public class WebSocketServer {
 
     @OnWebSocketConnect
     public void onOpen(Session session) {
-        System.out.println("New connection: " + session.getId());
+        System.out.println("New connection");
     }
 
     @OnWebSocketMessage
-    public void onMessage(String message, Session session) {
+    public void onMessage(Session session, String message) {
+        System.out.println("in onMessage");
         // Deserialize message into UserGameCommand
         UserGameCommand command = parseCommand(message);
         try {
@@ -242,6 +240,11 @@ public class WebSocketServer {
         System.out.println("Error: " + throwable.getMessage());
     }
 
+    @OnWebSocketClose
+    public void onClose(int statusCode, String reason) {
+        System.out.println("Connection closed, reason: " + reason);
+    }
+
     private void broadcastMessage(ServerMessage msg, Integer gameID) {
         List<Session> gameSessions = sessions.get(gameID);
         if (gameSessions != null) {
@@ -265,7 +268,7 @@ public class WebSocketServer {
     private void sendMessage(ServerMessage message, Session session) {
         try {
             String json = new Gson().toJson(message);
-            session.getBasicRemote().sendText(json);
+            session.getRemote().sendString(json);
         } catch (IOException e) {
             System.out.println("Error sending message: " + e.getMessage());
         }

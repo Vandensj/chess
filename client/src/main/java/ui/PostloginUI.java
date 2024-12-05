@@ -28,13 +28,12 @@ public class PostloginUI {
     public void start() {
         System.out.println("You are logged in! Type 'help' for a list of commands.");
 
-        try {
-            updateGames();
-        } catch (Exception e) {
-            System.out.println("Error getting games from server: " + e.getMessage());
-        }
-
         while (true) {
+            try {
+                updateGames();
+            } catch (Exception e) {
+                System.out.println("Error getting games from server: " + e.getMessage());
+            }
             System.out.print("[LOGGED_IN] >>> ");
             String command = scanner.nextLine().trim().toLowerCase();
 
@@ -199,7 +198,7 @@ public class PostloginUI {
                 System.out.println("Joined game successfully.");
 
                 // Transition to GameUI for gameplay
-                new GameUI(client, gameList.get(gameNames.get(gameNumber)), color, authToken).start();
+                new GameUI(client, gameList.get(gameNames.get(gameNumber-1)), color, authToken).start();
             } else {
                 System.out.println("Failed to join game. Please try another.");
             }
@@ -210,20 +209,16 @@ public class PostloginUI {
 
 
     private void handleObserveGame() {
-        System.out.print("Enter the number of the game you want to observe: ");
+        System.out.print("Enter the number of the game you want to join: ");
         int gameNumber = Integer.parseInt(scanner.nextLine());
 
-        if (!(gameNames.size() < gameNumber - 1)) {
+        if (gameNames.size() < gameNumber || gameNumber < 1) {
             System.out.println("Invalid game number. Please list games and try again.");
             return;
         }
 
-        Integer gameId = gameList.get(gameNames.get(gameNumber - 1));
         try {
-            // Placeholder for observe game request
-            System.out.println("Observing game " + gameNumber + ". Functionality to be implemented in Phase 6.");
-            // Add WebSocket or other real-time observer setup here in future phase
-            new GameUI(client, gameId, null, authToken).start();
+            new GameUI(client, gameList.get(gameNames.get(gameNumber-1)), null, authToken).start();
         } catch (Exception e) {
             System.out.println("An error occurred while attempting to observe the game: " + e.getMessage());
         }
