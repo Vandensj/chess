@@ -31,6 +31,8 @@ public class Server {
 
         Spark.port(desiredPort);
 
+        Spark.webSocket("/ws", new WebSocketServer(authDAO,gameDAO,userDAO));
+
         Spark.staticFiles.location("web");
 
         try {

@@ -9,7 +9,8 @@ import java.util.Objects;
  * methods.
  */
 public class ServerMessage {
-    ServerMessageType serverMessageType;
+    private ServerMessageType serverMessageType;
+    private String messageText;
 
     public enum ServerMessageType {
         LOAD_GAME,
@@ -17,12 +18,17 @@ public class ServerMessage {
         NOTIFICATION
     }
 
-    public ServerMessage(ServerMessageType type) {
+    public ServerMessage(ServerMessageType type, String messageText) {
         this.serverMessageType = type;
+        this.messageText = messageText;
     }
 
     public ServerMessageType getServerMessageType() {
         return this.serverMessageType;
+    }
+
+    public String getMessageText() {
+        return this.messageText;
     }
 
     @Override
@@ -34,7 +40,8 @@ public class ServerMessage {
             return false;
         }
         ServerMessage that = (ServerMessage) o;
-        return getServerMessageType() == that.getServerMessageType();
+        return getServerMessageType() == that.getServerMessageType() &&
+                Objects.equals(getMessageText(), that.getMessageText());
     }
 
     @Override
