@@ -114,6 +114,20 @@ public class SqlGameDAO implements GameDAO {
     }
 
     @Override
+    public void updateChessGame(ChessGame game, Integer gameID) throws DataAccessException {
+        String sql = "UPDATE game SET chessGame = ? WHERE gameId = ?";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            String chessGameJson = new Gson().toJson(game);
+            preparedStatement.setString(1, chessGameJson);
+            preparedStatement.setInt(2, gameID);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("Error updating game: " + e.getMessage());
+        }
+    }
+
+    @Override
     public Integer getSize() throws DataAccessException {
         String sql = "SELECT COUNT(*) FROM game";
         try (Connection connection = DatabaseManager.getConnection();

@@ -10,6 +10,7 @@ import dataaccess.GameDAO;
 import dataaccess.UserDAO;
 import model.GameData;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import websocket.commands.MakeMoveCommand;
@@ -187,6 +188,10 @@ public class WebSocketServer {
         ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
                 color + " user " + username + " has left the game");
         broadcastMessage(msg, gameID);
+        if (!color.equals("observer")) {
+            ChessGame.TeamColor teamColor = (color.equals("white")) ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
+            gameDAO.updateGame(teamColor, gameID, null);
+        }
         sessions.get(gameID).remove(session);
     }
 
@@ -219,6 +224,11 @@ public class WebSocketServer {
             broadcastMessage(msg, gameID);
             game.setGameOver(true);
         }
+    }
+
+    @OnWebSocketError
+    public void onError(Session session, Throwable throwable) {
+        System.out.println("Error: " + throwable.getMessage());
     }
 
     private void broadcastMessage(ServerMessage msg, Integer gameID) {
