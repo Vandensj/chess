@@ -89,11 +89,13 @@ public class WebSocketServer {
         GameData gameData = gameDAO.getGame(gameID);
 
         if (username == null) {
+            System.out.println("User not found.");
             ServerMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "invalid authToken");
             sendMessage(msg, session);
             return;
         }
         if (!gameDAO.verifyGame(gameID)) {
+            System.out.println("Game not found.");
             ServerMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "game not found");
             sendMessage(msg, session);
             return;
