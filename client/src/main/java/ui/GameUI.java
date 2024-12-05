@@ -18,6 +18,7 @@ public class GameUI {
     private final ChessGame.TeamColor color;
     private WebSocketClient webSocketClient;
     private ChessGame chessGame;
+    private static boolean closed = false;
 
     public GameUI(Client client, Integer gameID, ChessGame.TeamColor teamColor, String authToken) throws Exception {
         this.client = client;
@@ -26,7 +27,7 @@ public class GameUI {
         this.scanner = new Scanner(System.in);
         this.color = teamColor;
         try {
-            this.webSocketClient = client.getServerFacade().createWebSocketClient();
+            this.webSocketClient = client.getServerFacade().createWebSocketClient(this);
         } catch (Exception e) {
             throw new Exception("Error creating web socket client");
         }
@@ -43,10 +44,21 @@ public class GameUI {
         }
     }
 
+    public static void connectionClosed() {
+        closed = true;
+    }
+
     public void start() {
+        if (chessGame == null) {
+            System.out.println("Failed to connect to server.");
+            return;
+        }
         System.out.println("Welcome to the game! Type 'help' for a list of commands.");
 
         while (true) {
+            if (closed) {
+                return;
+            }
             System.out.print("[IN_GAME] >>> ");
             String command = scanner.nextLine().trim().toLowerCase();
 
@@ -55,13 +67,13 @@ public class GameUI {
                     displayHelp();
                     break;
                 case "redraw":
-                    chessGame = webSocketClient.getGame();
                     ChessGame.TeamColor bottom = (color == null) ? ChessGame.TeamColor.WHITE : color;
                     BoardPrinter.printBoard(chessGame.getBoard(), bottom);
                     break;
                 case "leave":
-                    leaveGame();
-                    return; // Exit the game UI
+                    if (leaveGame())
+                        return;
+                    break; // Exit the game UI
                 case "move":
                     if (color == null) {
                         System.out.println("Invalid command for observer");
@@ -98,20 +110,25 @@ public class GameUI {
         System.out.println("highlight  - Highlights legal moves for a selected piece.");
     }
 
-    private void leaveGame() {
+    private Boolean leaveGame() {
         System.out.print("Are you sure you want to leave? (yes/no): ");
         String confirmation = scanner.nextLine().trim().toLowerCase();
         if (confirmation.equals("yes") || confirmation.equals("y")) {
             UserGameCommand resignCommand = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
             webSocketClient.sendMessage(resignCommand);
             System.out.println("You have left the game.");
+            return true;
         } else {
-            System.out.println("Resignation canceled.");
+            System.out.println("Leave canceled.");
+            return false;
         }
     }
 
     private void makeMove() {
-        this.chessGame = webSocketClient.getGame();
+        if (!this.chessGame.getTeamTurn().equals(color)) {
+            System.out.println("It is not your turn.");
+            return;
+        }
         System.out.print("Enter the start position (e.g., e2): ");
         ChessPosition start = parsePosition(scanner.nextLine().trim());
         ChessPiece piece = chessGame.getBoard().getPiece(start);
@@ -180,7 +197,6 @@ public class GameUI {
     }
 
     private void highlightLegalMoves() {
-        chessGame = webSocketClient.getGame();
         System.out.print("Enter the position of the piece to highlight (e.g., e2): ");
         ChessPosition position = parsePosition(scanner.nextLine().trim());
         if (position == null) {
@@ -204,5 +220,12 @@ public class GameUI {
             System.out.println("Position must be in format [a-h][1-8].");
             return null;
         }
+    }
+
+    public void loadGame(ChessGame game) {
+        this.chessGame = game;
+        ChessGame.TeamColor bottom = (color == null) ? ChessGame.TeamColor.WHITE : color;
+        BoardPrinter.printBoard(chessGame.getBoard(), bottom);
+        System.out.println("The game has been updated.");
     }
 }

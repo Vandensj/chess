@@ -18,29 +18,28 @@ public class WebSocketClient {
     private final Gson gson = new Gson();
     private ChessGame game;
     public ChessGame.TeamColor teamColor = ChessGame.TeamColor.WHITE;
+    private final GameUI gameUI;
 
     // Constructor: Connects to the server
-    public WebSocketClient(String serverUri) {
+    public WebSocketClient(String serverUri, GameUI gameUI) {
         try {
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             container.connectToServer(this, new URI(serverUri));
         } catch (Exception e) {
             System.err.println("Failed to connect to server: " + e.getMessage());
         }
+        this.gameUI = gameUI;
     }
 
     // Called when the WebSocket connection is established
     @OnOpen
     public void onOpen(Session session) {
-        System.out.println("Connected to server.");
         this.session = session;
     }
 
     // Called when a message is received from the server
     @OnMessage
     public void onMessage(String message) {
-        System.out.println("Received: " + message);
-
         if (message.contains("LOAD_GAME")) {
             LoadGameMessage msg = gson.fromJson(message, LoadGameMessage.class);
             handleLoadGame(msg.getGame());
@@ -53,12 +52,14 @@ public class WebSocketClient {
         } else {
             System.err.println("Unknown server message type.");
         }
+        System.out.print("[IN_GAME] >>> ");
     }
 
     // Called when the WebSocket connection is closed
     @OnClose
     public void onClose(Session session, CloseReason closeReason) {
         System.out.println("Connection closed: " + closeReason);
+        GameUI.connectionClosed();
     }
 
     // Called when an error occurs
@@ -94,23 +95,17 @@ public class WebSocketClient {
 
     // Handle LOAD_GAME messages
     private void handleLoadGame(ChessGame game) {
-        this.game = game;
-        BoardPrinter.printBoard(game.getBoard(), teamColor);
+        gameUI.loadGame(game);
     }
 
     // Handle ERROR messages
     private void handleError(String errorMessage) {
         System.err.println("Error from server: " + errorMessage);
-        // Handle the error appropriately (e.g., show a user-facing message)
     }
 
     // Handle NOTIFICATION messages
     private void handleNotification(String message) {
         System.out.println("Notification: " + message);
         // Display the notification in the UI or console
-    }
-
-    public ChessGame getGame() {
-        return game;
     }
 }

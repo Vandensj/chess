@@ -41,7 +41,7 @@ public class WebSocketServer {
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) {
-        System.out.println("in onMessage");
+        System.out.println("New message: " + message);
         // Deserialize message into UserGameCommand
         if (message.contains("MAKE_MOVE")) {
             MakeMoveCommand command = new Gson().fromJson(message, MakeMoveCommand.class);

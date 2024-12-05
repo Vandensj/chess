@@ -102,10 +102,10 @@ public class ServerFacade {
         return response.body();
     }
 
-    public WebSocketClient createWebSocketClient() throws Exception {
+    public WebSocketClient createWebSocketClient(GameUI gameUI) throws Exception {
         String uri = baseUrl + "ws";
         uri = uri.replaceFirst("http", "ws");
-        WebSocketClient webSocketClient = new WebSocketClient(uri);
+        WebSocketClient webSocketClient = new WebSocketClient(uri, gameUI);
         return webSocketClient;
     }
 }
