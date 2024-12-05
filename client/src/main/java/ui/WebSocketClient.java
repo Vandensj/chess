@@ -17,6 +17,7 @@ public class WebSocketClient {
     private Session session;
     private final Gson gson = new Gson();
     private ChessGame game;
+    public ChessGame.TeamColor teamColor;
 
     // Constructor: Connects to the server
     public WebSocketClient(String serverUri) {

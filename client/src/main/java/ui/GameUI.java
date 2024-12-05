@@ -5,7 +5,6 @@ import chess.ChessMove;
 import chess.ChessPosition;
 import com.google.gson.Gson;
 import websocket.commands.UserGameCommand;
-import websocket.messages.UserGameCommand;
 
 import java.io.PrintWriter;
 import java.util.Scanner;
@@ -37,6 +36,7 @@ public class GameUI {
         } catch (Exception e) {
             throw new Exception("Error joining web socket server");
         }
+        webSocketClient.teamColor = teamColor;
     }
 
     public void start() {
@@ -93,11 +93,19 @@ public class GameUI {
     }
 
     private void redrawBoard() {
-        PrintBoard
+
     }
 
     private void leaveGame() {
-
+        System.out.print("Are you sure you want to leave? (yes/no): ");
+        String confirmation = scanner.nextLine().trim().toLowerCase();
+        if (confirmation.equals("yes") || confirmation.equals("y")) {
+            UserGameCommand resignCommand = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
+            webSocketClient.sendMessage(resignCommand);
+            System.out.println("You have left the game.");
+        } else {
+            System.out.println("Resignation canceled.");
+        }
     }
 
     private void makeMove() {
@@ -120,10 +128,10 @@ public class GameUI {
     private void resignGame() {
         System.out.print("Are you sure you want to resign? (yes/no): ");
         String confirmation = scanner.nextLine().trim().toLowerCase();
-        if (confirmation.equals("yes")) {
-            System.out.println("You have resigned the game.");
+        if (confirmation.equals("yes") || confirmation.equals("y")) {
             UserGameCommand resignCommand = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID);
-            client.sendMessage(new Gson().toJson(resignCommand));
+            webSocketClient.sendMessage(resignCommand);
+            System.out.println("You have resigned the game.");
         } else {
             System.out.println("Resignation canceled.");
         }
