@@ -144,12 +144,14 @@ public class WebSocketServer {
                 broadcastMessage(msg, gameID);
             } else if (game.isInCheckmate(opponent)) {
                 msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, opponent +
-                        " is in checkmate");
+                        " is in checkmate, " + color + " wins");
                 broadcastMessage(msg, gameID);
-            } else if (game.isInStalemate(opponent)) {
-                msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "game in " +
+                game.setGameOver(true);
+            } else if (game.isInStalemate(opponent) || game.isInStalemate(color)) {
+                msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "game ends in " +
                         "stalemate");
                 broadcastMessage(msg, gameID);
+                game.setGameOver(true);
             }
         } catch (InvalidMoveException e) {
             ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage());
@@ -157,12 +159,66 @@ public class WebSocketServer {
         }
     }
 
-    private void handleLeave(UserGameCommand command, Session session) {
+    private void handleLeave(UserGameCommand command, Session session) throws DataAccessException {
         // Notify other players and update the game state
+        Integer gameID = command.getGameID();
+        String authToken = command.getAuthToken();
+        String username = authDAO.getUsername(authToken);
+        GameData gameData = gameDAO.getGame(gameID);
+
+        if (username == null) {
+            ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "invalid authToken");
+            sendMessage(msg, session);
+            return;
+        }
+        if (!gameDAO.verifyGame(gameID)) {
+            ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "game not found");
+            sendMessage(msg, session);
+            return;
+        }
+
+        String color = "observer";
+        if (Objects.equals(gameData.whiteUsername(), username)) {
+            color = "white";
+        } else if (Objects.equals(gameData.blackUsername(), username)) {
+            color = "black";
+        }
+
+        ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                color + " user " + username + " has left the game");
+        broadcastMessage(msg, gameID);
+        sessions.get(gameID).remove(session);
     }
 
-    private void handleResign(UserGameCommand command, Session session) {
+    private void handleResign(UserGameCommand command, Session session) throws DataAccessException {
         // End game and notify all connected clients
+        Integer gameID = command.getGameID();
+        String authToken = command.getAuthToken();
+        String username = authDAO.getUsername(authToken);
+        GameData gameData = gameDAO.getGame(gameID);
+
+        if (username == null) {
+            ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "invalid authToken");
+            sendMessage(msg, session);
+            return;
+        }
+        if (!gameDAO.verifyGame(gameID)) {
+            ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "game not found");
+            sendMessage(msg, session);
+            return;
+        }
+        if (gameData.game().isOver()) {
+            ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "game is over");
+            sendMessage(msg, session);
+        } else {
+            ChessGame game = gameData.game();
+            ChessGame.TeamColor color = game.getTeamTurn();
+            ChessGame.TeamColor opponent = (game.getTeamTurn() == ChessGame.TeamColor.WHITE) ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+            ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, color + " has " +
+                    "resigned, " + opponent + " wins");
+            broadcastMessage(msg, gameID);
+            game.setGameOver(true);
+        }
     }
 
     private void broadcastMessage(ServerMessage msg, Integer gameID) {
