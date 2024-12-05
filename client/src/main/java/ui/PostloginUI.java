@@ -200,8 +200,6 @@ public class PostloginUI {
 
                 // Transition to GameUI for gameplay
                 new GameUI(client, gameList.get(gameNames.get(gameNumber)), color, authToken).start();
-                printChessBoard(true);
-                printChessBoard(false);
             } else {
                 System.out.println("Failed to join game. Please try another.");
             }
@@ -225,11 +223,10 @@ public class PostloginUI {
             // Placeholder for observe game request
             System.out.println("Observing game " + gameNumber + ". Functionality to be implemented in Phase 6.");
             // Add WebSocket or other real-time observer setup here in future phase
+            new GameUI(client, gameId, null, authToken).start();
         } catch (Exception e) {
             System.out.println("An error occurred while attempting to observe the game: " + e.getMessage());
         }
-        printChessBoard(true);
-        printChessBoard(false);
     }
 
     private static void printChessBoard(boolean whiteOnTop) {

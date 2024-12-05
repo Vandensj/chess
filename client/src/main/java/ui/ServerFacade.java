@@ -99,4 +99,9 @@ public class ServerFacade {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         return response.body();
     }
+
+    public WebSocketClient createWebSocketClient() throws Exception {
+        String uri = baseUrl + "ws";
+        return new WebSocketClient(uri);
+    }
 }
