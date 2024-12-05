@@ -17,7 +17,7 @@ public class WebSocketClient {
     private Session session;
     private final Gson gson = new Gson();
     private ChessGame game;
-    public ChessGame.TeamColor teamColor;
+    public ChessGame.TeamColor teamColor = ChessGame.TeamColor.WHITE;
 
     // Constructor: Connects to the server
     public WebSocketClient(String serverUri) {
@@ -103,7 +103,7 @@ public class WebSocketClient {
     // Handle LOAD_GAME messages
     private void handleLoadGame(ChessGame game) {
         this.game = game;
-        drawBoard(game.getBoard());
+        BoardPrinter.printBoard(game.getBoard(), teamColor);
     }
 
     // Handle ERROR messages

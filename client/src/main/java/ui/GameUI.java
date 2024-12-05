@@ -1,9 +1,8 @@
 package ui;
 
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPosition;
+import chess.*;
 import com.google.gson.Gson;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 
 import java.io.PrintWriter;
@@ -51,7 +50,8 @@ public class GameUI {
                     displayHelp();
                     break;
                 case "redraw":
-                    redrawBoard();
+                    chessGame = webSocketClient.getGame();
+                    BoardPrinter.printBoard(chessGame.getBoard(), color);
                     break;
                 case "leave":
                     leaveGame();
@@ -92,10 +92,6 @@ public class GameUI {
         System.out.println("highlight  - Highlights legal moves for a selected piece.");
     }
 
-    private void redrawBoard() {
-
-    }
-
     private void leaveGame() {
         System.out.print("Are you sure you want to leave? (yes/no): ");
         String confirmation = scanner.nextLine().trim().toLowerCase();
@@ -109,19 +105,59 @@ public class GameUI {
     }
 
     private void makeMove() {
+        this.chessGame = webSocketClient.getGame();
         System.out.print("Enter the start position (e.g., e2): ");
-        String start = scanner.nextLine().trim();
+        ChessPosition start = parsePosition(scanner.nextLine().trim());
+        ChessPiece piece = chessGame.getBoard().getPiece(start);
+        if (piece == null || piece.getTeamColor() != this.color) {
+            System.out.println("Invalid piece");
+            makeMove();
+        }
         System.out.print("Enter the end position (e.g., e4): ");
-        String end = scanner.nextLine().trim();
+        ChessPosition end = parsePosition(scanner.nextLine().trim());
+
+        // Check if it's a pawn upgrade move
+        ChessPiece.PieceType promotion = null;
+        assert piece != null;
+        if (piece.getPieceType() == ChessPiece.PieceType.PAWN) {
+            if (((color == ChessGame.TeamColor.BLACK) && (end.getRow() == 1))
+                    || ((color == ChessGame.TeamColor.WHITE) && (end.getRow() == 8))) {
+                System.out.print("Enter promotion piece (e.g., queen): ");
+                switch (scanner.nextLine().trim()) {
+                    case "queen":
+                        promotion = ChessPiece.PieceType.QUEEN;
+                        break;
+                    case "rook":
+                        promotion = ChessPiece.PieceType.ROOK;
+                        break;
+                    case "bishop":
+                        promotion = ChessPiece.PieceType.BISHOP;
+                        break;
+                    case "knight":
+                        promotion = ChessPiece.PieceType.KNIGHT;
+                        break;
+                    default:
+                        System.out.println("Invalid promotion piece");
+                        makeMove();
+                }
+            }
+        }
+
+        ChessMove move = new ChessMove(start, end, promotion);
+        try {
+            chessGame.makeMove(move);
+        } catch (InvalidMoveException e) {
+            System.out.println("Invalid move");
+            return;
+        }
 
         try {
-            ChessMove move = parseMove(start, end);
-            UserGameCommand moveCommand = new UserGameCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID);
-            moveCommand.setMove(move);
+            UserGameCommand moveCommand = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken,
+                    gameID, move);
 
-            client.sendMessage(new Gson().toJson(moveCommand));
+            webSocketClient.sendMessage(moveCommand);
         } catch (IllegalArgumentException e) {
-            System.out.println("Invalid move format: " + e.getMessage());
+            System.out.println("Error making move: " + e.getMessage());
         }
     }
 
@@ -138,21 +174,10 @@ public class GameUI {
     }
 
     private void highlightLegalMoves() {
+        chessGame = webSocketClient.getGame();
         System.out.print("Enter the position of the piece to highlight (e.g., e2): ");
-        String position = scanner.nextLine().trim();
-
-        try {
-            ChessMove start = parseSinglePosition(position);
-            // Call a local method to highlight moves (no server communication needed)
-            System.out.println("Highlighting legal moves for piece at " + position + "...");
-        } catch (IllegalArgumentException e) {
-            System.out.println("Invalid position format: " + e.getMessage());
-        }
-    }
-
-    // Helper to parse move input
-    private ChessMove parseMove(String start, String end) {
-        return new ChessMove(parsePosition(start), parsePosition(end));
+        ChessPosition position = parsePosition(scanner.nextLine().trim());
+        BoardPrinter.printHighlightedMoves(chessGame.getBoard(), color, position);
     }
 
     private ChessPosition parsePosition(String input) {
@@ -164,9 +189,5 @@ public class GameUI {
             }
         }
         throw new IllegalArgumentException("Position must be in format [a-h][1-8].");
-    }
-
-    private ChessMove parseSinglePosition(String input) {
-        return new ChessMove(parsePosition(input), null); // Highlight only uses the start position
     }
 }
