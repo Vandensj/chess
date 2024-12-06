@@ -61,7 +61,7 @@ public class WebSocketClient {
         } else {
             System.err.println("Unknown server message type.");
         }
-        System.out.print("[IN_GAME] >>> ");
+        System.out.print("\r[IN_GAME] >>> ");
     }
 
     // Send a message to the server

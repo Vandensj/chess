@@ -60,13 +60,17 @@ public class BoardPrinter {
     }
 
     public static void printHighlightedMoves(ChessBoard board, ChessGame.TeamColor bottomColor, Collection<ChessMove> moves) {
-        Collection<ChessPosition> positions = new ArrayList<>();
-        for (ChessMove move : moves) {
-            positions.add(move.getStartPosition());
-            positions.add(move.getEndPosition());
-        }
+        if (moves != null) {
+            Collection<ChessPosition> positions = new ArrayList<>();
+            for (ChessMove move : moves) {
+                positions.add(move.getStartPosition());
+                positions.add(move.getEndPosition());
+            }
 
-        printBoard(board, bottomColor, positions);
+            printBoard(board, bottomColor, positions);
+        } else {
+            System.out.println("No moves found");
+        }
     }
 
     private static String getPieceString(ChessPiece piece) {

@@ -118,19 +118,29 @@ public class GameUI {
     }
 
     private void makeMove() {
+        if (this.chessGame.isOver()) {
+            System.out.println("The game is over.");
+            return;
+        }
         if (!this.chessGame.getTeamTurn().equals(color)) {
             System.out.println("It is not your turn.");
             return;
         }
         System.out.print("Enter the start position (e.g., e2): ");
         ChessPosition start = parsePosition(scanner.nextLine().trim());
+        if (start == null) {
+            return;
+        }
         ChessPiece piece = chessGame.getBoard().getPiece(start);
         if (piece == null || piece.getTeamColor() != this.color) {
             System.out.println("Invalid piece");
-            makeMove();
+            return;
         }
         System.out.print("Enter the end position (e.g., e4): ");
         ChessPosition end = parsePosition(scanner.nextLine().trim());
+        if (end == null) {
+            return;
+        }
 
         // Check if it's a pawn upgrade move
         ChessPiece.PieceType promotion = null;
@@ -192,11 +202,12 @@ public class GameUI {
     private void highlightLegalMoves() {
         System.out.print("Enter the position of the piece to highlight (e.g., e2): ");
         ChessPosition position = parsePosition(scanner.nextLine().trim());
-        if (position == null) {
-            return;
+        if (position != null) {
+            ChessGame.TeamColor bottom = (color == null) ? ChessGame.TeamColor.WHITE : color;
+            BoardPrinter.printHighlightedMoves(chessGame.getBoard(), bottom, chessGame.validMoves(position));
+        } else {
+            System.out.println("Invalid position");
         }
-        ChessGame.TeamColor bottom = (color == null) ? ChessGame.TeamColor.WHITE : color;
-        BoardPrinter.printHighlightedMoves(chessGame.getBoard(), bottom, chessGame.validMoves(position));
     }
 
     private ChessPosition parsePosition(String input) {
