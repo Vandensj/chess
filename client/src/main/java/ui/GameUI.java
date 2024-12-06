@@ -49,10 +49,6 @@ public class GameUI {
     }
 
     public void start() {
-        if (chessGame == null) {
-            System.out.println("Failed to connect to server.");
-            return;
-        }
         System.out.println("Welcome to the game! Type 'help' for a list of commands.");
 
         while (true) {

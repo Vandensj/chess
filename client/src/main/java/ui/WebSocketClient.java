@@ -114,7 +114,7 @@ public class WebSocketClient {
 
     // Handle NOTIFICATION messages
     private void handleNotification(String message) {
-        System.out.println("Notification: " + message);
+        System.out.println("\rNotification: " + message);
         // Display the notification in the UI or console
     }
 }
