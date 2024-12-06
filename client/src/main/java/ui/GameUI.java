@@ -44,10 +44,6 @@ public class GameUI {
         }
     }
 
-    public static void connectionClosed() {
-        closed = true;
-    }
-
     public void start() {
         System.out.println("Welcome to the game! Type 'help' for a list of commands.");
 

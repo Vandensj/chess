@@ -64,19 +64,6 @@ public class WebSocketClient {
         System.out.print("[IN_GAME] >>> ");
     }
 
-    // Called when the WebSocket connection is closed
-//    @OnClose
-//    public void onClose(Session session, CloseReason closeReason) {
-//        System.out.println("Connection closed: " + closeReason);
-//        GameUI.connectionClosed();
-//    }
-
-    // Called when an error occurs
-//    @OnError
-//    public void onError(Session session, Throwable throwable) {
-//        System.err.println("WebSocket error: " + throwable.getMessage());
-//    }
-
     // Send a message to the server
     public void sendMessage(UserGameCommand command) {
         try {
