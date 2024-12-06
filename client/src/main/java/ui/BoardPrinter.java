@@ -62,6 +62,7 @@ public class BoardPrinter {
 
         Collection<ChessPosition> positions = new ArrayList<>();
         for (ChessMove move : moves) {
+            positions.add(move.getStartPosition());
             positions.add(move.getEndPosition());
         }
 

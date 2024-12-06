@@ -303,6 +303,11 @@ public class ChessGame {
     }
 
     public Boolean isOver() {
+        if (isInStalemate(TeamColor.BLACK) || isInStalemate(TeamColor.WHITE)
+            || (isInCheckmate(TeamColor.BLACK) && turnTeam.equals(TeamColor.BLACK))
+            || (isInCheckmate(TeamColor.WHITE) && turnTeam.equals(TeamColor.WHITE))) {
+            gameOver = true;
+        }
         return gameOver;
     }
 

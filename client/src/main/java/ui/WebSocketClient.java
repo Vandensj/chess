@@ -11,6 +11,8 @@ import websocket.messages.ServerMessage;
 
 import javax.websocket.*;
 import java.net.URI;
+import java.util.Timer;
+import java.util.TimerTask;
 
 @ClientEndpoint
 public class WebSocketClient {
@@ -22,14 +24,21 @@ public class WebSocketClient {
 
     // Constructor: Connects to the server
     public WebSocketClient(String serverUri, GameUI gameUI) {
+        this.gameUI = gameUI;
+        connect(serverUri);
+    }
+
+    private void connect(String serverUri) {
         try {
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             container.connectToServer(this, new URI(serverUri));
+            System.out.println("Connected to WebSocket server at: " + serverUri);
         } catch (Exception e) {
             System.err.println("Failed to connect to server: " + e.getMessage());
+            // Optionally retry or handle connection failures
         }
-        this.gameUI = gameUI;
     }
+
 
     // Called when the WebSocket connection is established
     @OnOpen

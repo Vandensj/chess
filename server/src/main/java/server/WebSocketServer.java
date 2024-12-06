@@ -50,6 +50,7 @@ public class WebSocketServer {
             } catch (Exception e) {
                 System.out.println("Error: " + e.getMessage());
             }
+            return;
         }
         UserGameCommand command = parseCommand(message);
         try {
@@ -88,16 +89,18 @@ public class WebSocketServer {
         String username = authDAO.getUsername(authToken);
         GameData gameData = gameDAO.getGame(gameID);
 
-        if (username == null) {
+        if (!authDAO.verifyAuthToken(authToken)) {
             System.out.println("User not found.");
-            ServerMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "invalid authToken");
-            sendMessage(msg, session);
+            ErrorMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "invalid authToken");
+            String json = new Gson().toJson(msg);
+            sendMessage(json, session);
             return;
         }
         if (!gameDAO.verifyGame(gameID)) {
             System.out.println("Game not found.");
-            ServerMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "game not found");
-            sendMessage(msg, session);
+            ErrorMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "game not found");
+            String json = new Gson().toJson(msg);
+            sendMessage(json, session);
             return;
         }
 
@@ -110,12 +113,14 @@ public class WebSocketServer {
             color = "black";
         }
 
-        ServerMessage notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, username +
+        NotificationMessage notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, username +
                 " has joined the game as " + color);
-        broadcastMessageExclude(notification, gameID, session);
+        String json = new Gson().toJson(notification);
+        broadcastMessageExclude(json, gameID, session);
 
-        ServerMessage gameMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game());
-        sendMessage(gameMessage, session);
+        LoadGameMessage gameMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game());
+        String jsonGame = new Gson().toJson(gameMessage);
+        sendMessage(jsonGame, session);
     }
 
     private void handleMakeMove(MakeMoveCommand command, Session session)
@@ -123,23 +128,32 @@ public class WebSocketServer {
         // Validate move, update game, notify players
         Integer gameID = command.getGameID();
         String authToken = command.getAuthToken();
-        String username = authDAO.getUsername(authToken);
         GameData gameData = gameDAO.getGame(gameID);
         ChessMove move = command.getMove();
 
-        if (username == null) {
-            ServerMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "invalid authToken");
-            sendMessage(msg, session);
+        if (!authDAO.verifyAuthToken(authToken)) {
+            ErrorMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "invalid authToken");
+            String json = new Gson().toJson(msg);
+            sendMessage(json, session);
+            return;
+        }
+        if (!(authDAO.getUsername(authToken).equals(gameData.blackUsername()) && gameData.game().getTeamTurn() == ChessGame.TeamColor.BLACK)
+            && !(authDAO.getUsername(authToken).equals(gameData.whiteUsername()) && gameData.game().getTeamTurn() == ChessGame.TeamColor.WHITE)) {
+            ErrorMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "wrong turn");
+            String json = new Gson().toJson(msg);
+            sendMessage(json, session);
             return;
         }
         if (!gameDAO.verifyGame(gameID)) {
-            ServerMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "game not found");
-            sendMessage(msg, session);
+            ErrorMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "game not found");
+            String json = new Gson().toJson(msg);
+            sendMessage(json, session);
             return;
         }
         if (gameData.game().isOver()) {
-            ServerMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "game is over");
-            sendMessage(msg, session);
+            ErrorMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "game is over");
+            String json = new Gson().toJson(msg);
+            sendMessage(json, session);
             return;
         }
         try {
@@ -148,30 +162,36 @@ public class WebSocketServer {
             ChessGame.TeamColor opponent = (game.getTeamTurn() == ChessGame.TeamColor.WHITE) ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
             game.makeMove(move);
             gameDAO.updateChessGame(game, gameID);
-            ServerMessage msg = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
-            broadcastMessage(msg, gameID);
+            LoadGameMessage msgLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
+            String json = new Gson().toJson(msgLoad);
+            broadcastMessage(json, gameID);
 
-            msg = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, color +
+            NotificationMessage msg = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, color +
                     " has made a move");
-            broadcastMessageExclude(msg, gameID, session);
-            if (game.isInCheck(opponent)) {
+            json = new Gson().toJson(msg);
+            broadcastMessageExclude(json, gameID, session);
+            if (game.isInCheckmate(opponent)) {
                 msg = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, opponent +
                         " is in check");
-                broadcastMessage(msg, gameID);
-            } else if (game.isInCheckmate(opponent)) {
+                json = new Gson().toJson(msg);
+                broadcastMessage(json, gameID);
+            } else if (game.isInCheck(opponent)) {
                 msg = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, opponent +
                         " is in checkmate, " + color + " wins");
-                broadcastMessage(msg, gameID);
+                json = new Gson().toJson(msg);
+                broadcastMessage(json, gameID);
                 game.setGameOver(true);
             } else if (game.isInStalemate(opponent) || game.isInStalemate(color)) {
                 msg = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "game ends in " +
                         "stalemate");
-                broadcastMessage(msg, gameID);
+                json = new Gson().toJson(msg);
+                broadcastMessage(json, gameID);
                 game.setGameOver(true);
             }
         } catch (InvalidMoveException e) {
-            ServerMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage());
-            sendMessage(msg, session);
+            ErrorMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "invalid move");
+            String json = new Gson().toJson(msg);
+            sendMessage(json, session);
         }
     }
 
@@ -182,14 +202,16 @@ public class WebSocketServer {
         String username = authDAO.getUsername(authToken);
         GameData gameData = gameDAO.getGame(gameID);
 
-        if (username == null) {
-            ServerMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "invalid authToken");
-            sendMessage(msg, session);
+        if (!authDAO.verifyAuthToken(authToken)) {
+            ErrorMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "invalid authToken");
+            String json = new Gson().toJson(msg);
+            sendMessage(json, session);
             return;
         }
         if (!gameDAO.verifyGame(gameID)) {
-            ServerMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "game not found");
-            sendMessage(msg, session);
+            ErrorMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "game not found");
+            String json = new Gson().toJson(msg);
+            sendMessage(json, session);
             return;
         }
 
@@ -200,9 +222,10 @@ public class WebSocketServer {
             color = "black";
         }
 
-        ServerMessage msg = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+        NotificationMessage msg = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
                 color + " user " + username + " has left the game");
-        broadcastMessageExclude(msg, gameID, session);
+        String json = new Gson().toJson(msg);
+        broadcastMessageExclude(json, gameID, session);
         if (!color.equals("observer")) {
             ChessGame.TeamColor teamColor = (color.equals("white")) ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
             gameDAO.updateGame(teamColor, gameID, null);
@@ -217,26 +240,37 @@ public class WebSocketServer {
         String username = authDAO.getUsername(authToken);
         GameData gameData = gameDAO.getGame(gameID);
 
-        if (username == null) {
-            ServerMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "invalid authToken");
-            sendMessage(msg, session);
+        if (!authDAO.getUsername(authToken).equals(gameData.blackUsername())
+                && !authDAO.getUsername(authToken).equals(gameData.whiteUsername())) {
+            ErrorMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "wrong turn");
+            String json = new Gson().toJson(msg);
+            sendMessage(json, session);
+            return;
+        }
+        if (!authDAO.verifyAuthToken(authToken)) {
+            ErrorMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "invalid authToken");
+            String json = new Gson().toJson(msg);
+            sendMessage(json, session);
             return;
         }
         if (!gameDAO.verifyGame(gameID)) {
-            ServerMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "game not found");
-            sendMessage(msg, session);
+            ErrorMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "game not found");
+            String json = new Gson().toJson(msg);
+            sendMessage(json, session);
             return;
         }
         if (gameData.game().isOver()) {
-            ServerMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "game is over");
-            sendMessage(msg, session);
+            ErrorMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "game is over");
+            String json = new Gson().toJson(msg);
+            sendMessage(json, session);
         } else {
             ChessGame game = gameData.game();
             ChessGame.TeamColor color = game.getTeamTurn();
             ChessGame.TeamColor opponent = (game.getTeamTurn() == ChessGame.TeamColor.WHITE) ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
-            ServerMessage msg = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, color + " has " +
+            NotificationMessage msg = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, color + " has " +
                     "resigned, " + opponent + " wins");
-            broadcastMessage(msg, gameID);
+            String json = new Gson().toJson(msg);
+            broadcastMessage(json, gameID);
             game.setGameOver(true);
             gameDAO.updateChessGame(game, gameID);
         }
@@ -252,30 +286,30 @@ public class WebSocketServer {
         System.out.println("Connection closed, reason: " + reason);
     }
 
-    private void broadcastMessage(ServerMessage msg, Integer gameID) {
+    private void broadcastMessage(String msg, Integer gameID) {
         List<Session> gameSessions = sessions.get(gameID);
         if (gameSessions != null) {
             for (Session session : gameSessions) {
-                sendMessage(msg, session);
+                if (session.isOpen())
+                    sendMessage(msg, session);
             }
         }
     }
 
-    private void broadcastMessageExclude(ServerMessage msg, Integer gameID, Session exclude) {
+    private void broadcastMessageExclude(String msg, Integer gameID, Session exclude) {
         List<Session> gameSessions = sessions.get(gameID);
         if (gameSessions != null) {
             for (Session session : gameSessions) {
-                if (session != exclude) {
+                if (session != exclude && session.isOpen()) {
                     sendMessage(msg, session);
                 }
             }
         }
     }
 
-    private void sendMessage(ServerMessage message, Session session) {
+    private void sendMessage(String message, Session session) {
         try {
-            String json = new Gson().toJson(message);
-            session.getRemote().sendString(json);
+            session.getRemote().sendString(message);
         } catch (IOException e) {
             System.out.println("Error sending message: " + e.getMessage());
         }
