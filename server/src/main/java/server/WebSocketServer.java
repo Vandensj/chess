@@ -172,12 +172,12 @@ public class WebSocketServer {
             broadcastMessageExclude(json, gameID, session);
             if (game.isInCheckmate(opponent)) {
                 msg = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, opponent +
-                        " is in check");
+                        " is in checkmate, " + color + " wins");
                 json = new Gson().toJson(msg);
                 broadcastMessage(json, gameID);
             } else if (game.isInCheck(opponent)) {
                 msg = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, opponent +
-                        " is in checkmate, " + color + " wins");
+                        " is in check");
                 json = new Gson().toJson(msg);
                 broadcastMessage(json, gameID);
                 game.setGameOver(true);
