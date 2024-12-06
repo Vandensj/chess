@@ -2,6 +2,7 @@ package server;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPosition;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.AuthDAO;
@@ -159,7 +160,9 @@ public class WebSocketServer {
         try {
             ChessGame game = gameData.game();
             ChessGame.TeamColor color = game.getTeamTurn();
+            String username = authDAO.getUsername(authToken);
             ChessGame.TeamColor opponent = (game.getTeamTurn() == ChessGame.TeamColor.WHITE) ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+            String opponentName = (opponent == ChessGame.TeamColor.WHITE) ? gameData.whiteUsername() : gameData.blackUsername();
             game.makeMove(move);
             gameDAO.updateChessGame(game, gameID);
             LoadGameMessage msgLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
@@ -167,17 +170,18 @@ public class WebSocketServer {
             broadcastMessage(json, gameID);
 
             NotificationMessage msg = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, color +
-                    " has made a move");
+                    " user " + username + " has made a move from " + formatPosition(move.getStartPosition()) + " to "
+                    + formatPosition(move.getEndPosition()));
             json = new Gson().toJson(msg);
             broadcastMessageExclude(json, gameID, session);
             if (game.isInCheckmate(opponent)) {
                 msg = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, opponent +
-                        " is in checkmate, " + color + " wins");
+                        " user " + opponentName + " is in checkmate, " + color + " user " + username + " wins");
                 json = new Gson().toJson(msg);
                 broadcastMessage(json, gameID);
             } else if (game.isInCheck(opponent)) {
                 msg = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, opponent +
-                        " is in check");
+                        " user " + opponentName + " is in check");
                 json = new Gson().toJson(msg);
                 broadcastMessage(json, gameID);
                 game.setGameOver(true);
@@ -193,6 +197,11 @@ public class WebSocketServer {
             String json = new Gson().toJson(msg);
             sendMessage(json, session);
         }
+    }
+
+    private String formatPosition(ChessPosition position) {
+        char col = (char) ('a' + position.getColumn() - 1);
+        return col + String.valueOf(position.getRow());
     }
 
     private void handleLeave(UserGameCommand command, Session session) throws DataAccessException {
@@ -240,8 +249,8 @@ public class WebSocketServer {
         String username = authDAO.getUsername(authToken);
         GameData gameData = gameDAO.getGame(gameID);
 
-        if (!authDAO.getUsername(authToken).equals(gameData.blackUsername())
-                && !authDAO.getUsername(authToken).equals(gameData.whiteUsername())) {
+        if (!username.equals(gameData.blackUsername())
+                && !username.equals(gameData.whiteUsername())) {
             ErrorMessage msg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "wrong turn");
             String json = new Gson().toJson(msg);
             sendMessage(json, session);
@@ -265,10 +274,11 @@ public class WebSocketServer {
             sendMessage(json, session);
         } else {
             ChessGame game = gameData.game();
-            ChessGame.TeamColor color = game.getTeamTurn();
-            ChessGame.TeamColor opponent = (game.getTeamTurn() == ChessGame.TeamColor.WHITE) ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
-            NotificationMessage msg = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, color + " has " +
-                    "resigned, " + opponent + " wins");
+            ChessGame.TeamColor color = (username.equals(gameData.whiteUsername())) ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
+            ChessGame.TeamColor opponent = (color == ChessGame.TeamColor.WHITE) ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+            String opponentName = (opponent == ChessGame.TeamColor.WHITE) ? gameData.whiteUsername() : gameData.blackUsername();
+            NotificationMessage msg = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, color
+                    + " user " + username + " has resigned, " + opponent + " user " + opponentName + " wins");
             String json = new Gson().toJson(msg);
             broadcastMessage(json, gameID);
             game.setGameOver(true);
