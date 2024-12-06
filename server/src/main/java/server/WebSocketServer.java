@@ -26,7 +26,7 @@ public class WebSocketServer {
     private UserDAO userDAO;
     private GameDAO gameDAO;
     private AuthDAO authDAO;
-    private static final Map<Integer, List<Session>> sessions = new HashMap<>();
+    private static final Map<Integer, List<Session>> SESSIONS = new HashMap<>();
 
     public WebSocketServer(AuthDAO authDAO, GameDAO gameDAO, UserDAO userDAO) {
         this.userDAO = userDAO;
@@ -104,7 +104,7 @@ public class WebSocketServer {
             return;
         }
 
-        sessions.computeIfAbsent(gameID, k -> new ArrayList<>()).add(session);
+        SESSIONS.computeIfAbsent(gameID, k -> new ArrayList<>()).add(session);
 
         String color = "observer";
         if (Objects.equals(gameData.whiteUsername(), username)) {
@@ -230,7 +230,7 @@ public class WebSocketServer {
             ChessGame.TeamColor teamColor = (color.equals("white")) ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
             gameDAO.updateGame(teamColor, gameID, null);
         }
-        sessions.get(gameID).remove(session);
+        SESSIONS.get(gameID).remove(session);
     }
 
     private void handleResign(UserGameCommand command, Session session) throws DataAccessException {
@@ -287,17 +287,18 @@ public class WebSocketServer {
     }
 
     private void broadcastMessage(String msg, Integer gameID) {
-        List<Session> gameSessions = sessions.get(gameID);
+        List<Session> gameSessions = SESSIONS.get(gameID);
         if (gameSessions != null) {
             for (Session session : gameSessions) {
-                if (session.isOpen())
+                if (session.isOpen()) {
                     sendMessage(msg, session);
+                }
             }
         }
     }
 
     private void broadcastMessageExclude(String msg, Integer gameID, Session exclude) {
-        List<Session> gameSessions = sessions.get(gameID);
+        List<Session> gameSessions = SESSIONS.get(gameID);
         if (gameSessions != null) {
             for (Session session : gameSessions) {
                 if (session != exclude && session.isOpen()) {

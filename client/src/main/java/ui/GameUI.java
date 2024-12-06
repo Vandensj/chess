@@ -64,11 +64,12 @@ public class GameUI {
                     break;
                 case "redraw":
                     ChessGame.TeamColor bottom = (color == null) ? ChessGame.TeamColor.WHITE : color;
-                    BoardPrinter.printBoard(chessGame.getBoard(), bottom);
+                    BoardPrinter.printBoard(chessGame.getBoard(), bottom, null);
                     break;
                 case "leave":
-                    if (leaveGame())
+                    if (leaveGame()) {
                         return;
+                    }
                     break; // Exit the game UI
                 case "move":
                     if (color == null) {
@@ -221,7 +222,7 @@ public class GameUI {
     public void loadGame(ChessGame game) {
         this.chessGame = game;
         ChessGame.TeamColor bottom = (color == null) ? ChessGame.TeamColor.WHITE : color;
-        BoardPrinter.printBoard(chessGame.getBoard(), bottom);
+        BoardPrinter.printBoard(chessGame.getBoard(), bottom, null);
         System.out.println("The game has been updated.");
     }
 }
